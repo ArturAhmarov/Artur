@@ -87,26 +87,28 @@ function migrate($connection, $file) {
 }
 
 
-// Стартуем
+if($_GET['task'] == 'migration') {
+    // Стартуем
 
 
-// Получаем список файлов для миграций за исключением тех, которые уже есть в таблице versions
-$files = getMigrationFiles($connection);
+    // Получаем список файлов для миграций за исключением тех, которые уже есть в таблице versions
+    $files = getMigrationFiles($connection);
 
-// Проверяем, есть ли новые миграции
-if (empty($files)) {
-    echo 'Ваша база данных в актуальном состоянии.';
-} else {
-    echo 'Начинаем миграцию...<br><br>';
+    // Проверяем, есть ли новые миграции
+    if (empty($files)) {
+        echo 'Ваша база данных в актуальном состоянии.';
+    } else {
+        echo 'Начинаем миграцию...<br><br>';
 
-    // Накатываем миграцию для каждого файла
-    foreach ($files as $file) {
-        migrate($connection, $file);
-        // Выводим название выполненного файла
-        echo basename($file) . '<br>';
+        // Накатываем миграцию для каждого файла
+        foreach ($files as $file) {
+            migrate($connection, $file);
+            // Выводим название выполненного файла
+            echo basename($file) . '<br>';
+        }
+
+        echo '<br>Миграция завершена.';
     }
-
-    echo '<br>Миграция завершена.';
 }
 
 

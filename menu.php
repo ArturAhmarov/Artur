@@ -5,7 +5,7 @@
         background: #044fac;
         border-radius: 5px;
         height: 5px;
-        font-size: 20px;
+        font-size: 18px;
         text-decoration: none;
     }
     .menu a:hover{
@@ -90,6 +90,7 @@
     <a href="?task=magazine_list" >Магазины</a>
     <a href="?task=sh_list" >Склад</a>
     <a href="?task=request_list" >Список запросов</a>
+    <a href="?task=migration" >Миграций</a>
     <br>
 </div>
 <hr>
