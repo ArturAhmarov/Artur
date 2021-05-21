@@ -20,6 +20,7 @@ define('DB_USER', 'mysql');
 define('DB_PASSWORD', 'mysql');
 define('DB_NAME', 'kursach');
 define('DB_TABLE_VERSIONS', 'versions');
+define('DB_TABLE_HASH', 'hash');
 
 $connection = mysqli_connect('127.0.0.1', 'mysql', 'mysql', 'kursach');
 if ($connection == false) {
@@ -45,6 +46,22 @@ function getMigrationFiles($connection) {
     // Получаем список всех sql-файлов
     $allFiles = glob($sqlFolder . '*.sql');
 
+    $arr_number =preg_replace('~\D+~','', $allFiles);
+    $flag = true;
+    $j = 1;
+    for ($i = 0; $i < count($arr_number); $i++){
+        $n = (int)$arr_number[$i];
+        if($j != $n){
+            $flag = false;
+        }
+        $j++;
+    }
+    if($flag == false){
+        echo "Ошибка в названии файла!";
+        exit();
+    }
+
+
     // Проверяем, есть ли таблица versions
     // Так как versions создается первой, то это равносильно тому, что база не пустая
     $query = sprintf('show tables from `%s` like "%s"', DB_NAME, DB_TABLE_VERSIONS);
@@ -53,9 +70,33 @@ function getMigrationFiles($connection) {
 
     // Первая миграция, возвращаем все файлы из папки sql
     if ($firstMigration) {
+        foreach($allFiles as $file){
+            $hashname = hash_file('md5', $file);
+            $query = sprintf('insert into `%s` (`name`) values("%s")', DB_TABLE_HASH, $hashname);
+            // Выполняем запрос
+            $connection->query($query);
+        }
         return $allFiles;
     }
+    $arr_hash = '';
+    foreach($allFiles as $file){
+        $hash = hash_file('md5', $file);
+        $arr_hash = ''.$arr_hash.' '.$hash.'';
+    }
+    $arr_hash = explode(" ", $arr_hash);
 
+    // Выбираем из таблицы versions все названия файлов
+    $query = sprintf('select `name` from `%s`', DB_TABLE_HASH);
+    $data = $connection->query($query)->fetch_all(MYSQLI_ASSOC);
+    $i = 1;
+    foreach ($data as $row) {
+        if($row['name'] != $arr_hash[$i]){
+            echo 'Ошибка в данных файла';
+            print( $arr_hash[$i]);
+            exit();
+        }
+        $i++;
+    }
     // Ищем уже существующие миграции
     $versionsFiles = array();
     // Выбираем из таблицы versions все названия файлов
@@ -88,7 +129,6 @@ function migrate($connection, $file) {
 
 
 if($_GET['task'] == 'migration') {
-    // Стартуем
 
 
     // Получаем список файлов для миграций за исключением тех, которые уже есть в таблице versions
