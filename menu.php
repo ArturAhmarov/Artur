@@ -5,7 +5,7 @@
         background: #044fac;
         border-radius: 5px;
         height: 5px;
-        font-size: 18px;
+        font-size: 15px;
         text-decoration: none;
     }
     .menu a:hover{
@@ -81,6 +81,7 @@
 <hr>
 <div class="menu">
     <a href="?task=product_list">Товары</a>
+    <a href="?task=ship_product">Товары - поставщики</a>
     <a href="?task=marketer_list">Продавцы</a>
     <a href="?task=buyer_list" >Покупатели</a>
     <a href="?task=owner_list" >Владельцы</a>

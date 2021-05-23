@@ -29,6 +29,7 @@ if ($connection == false) {
 
 include 'menu.php';
 include 'product.php';
+include 'ship_product.php';
 include 'marketer.php';
 include 'owner.php';
 include 'shipper.php';
@@ -151,9 +152,6 @@ if($_GET['task'] == 'migration') {
     }
 }
 
-
-
-
 function link_bar($page, $pages_count)
 {
     for ($j = 1; $j <= $pages_count; $j++)
@@ -170,7 +168,40 @@ function link_bar($page, $pages_count)
     }
     return true;
 } // Конец функции
+if($_GET['task'] == 'ship_product'){
+    $res = mysqli_query($connection,'SELECT * FROM ship_product
+                                                INNER JOIN product ON product.id_product = ship_product.id_product
+                                                INNER JOIN shipper ON ship_product.id_shipper = shipper.id_shipper');
+    ?>
+    <H3> Товары - поставщикии </H3>
+    <a href="?task=add_ship_product" class="c">Добавить</a>
+    <p></p>
+    <table class="table table-bordered table-hover table-striped" style="width:600px;">
+        <tr>
+            <th>Номер товара</th>
+            <th>Название товара</th>
+            <th>Номер поставщика</th>
+            <th>ФИО поставщика</th>
+            <th colspan="2"></th>
+        </tr>
+        <?php
+        while ($row = $res->fetch_object()) {
+            ?>
+            <tr>
+                <td><?=$row->id_product;?></td>
+                <td><?=$row->name_product;?></td>
+                <td><?=$row->id_shipper;?></td>
+                <td><?=$row->name_shipper;?></td>
 
+                <td><a href="?task=edit_ship_product&id_ship_product=<?=$row->id;?>">Изменить</a></td>
+                <td><a href="?task=del_ship_product&id_ship_product=<?=$row->id;?>">Удалить</a></td>
+            </tr>
+            <?
+        }
+        ?>
+    </table>
+    <?php
+}
 if($_GET['task'] == 'product_list')
 {
     $perpage = 2;
