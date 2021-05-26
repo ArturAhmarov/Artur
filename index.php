@@ -169,9 +169,9 @@ function link_bar($page, $pages_count)
     return true;
 } // Конец функции
 if($_GET['task'] == 'ship_product'){
-    $res = mysqli_query($connection,'SELECT * FROM ship_product
-                                                INNER JOIN product ON product.id_product = ship_product.id_product
-                                                INNER JOIN shipper ON ship_product.id_shipper = shipper.id_shipper');
+    $res = mysqli_query($connection,'SELECT * FROM product_ship
+                                                INNER JOIN product ON product.id_product = product_ship.id_product
+                                                INNER JOIN shipper ON product_ship.id_shipper = shipper.id_shipper');
     ?>
     <H3> Товары - поставщикии </H3>
     <a href="?task=add_ship_product" class="c">Добавить</a>

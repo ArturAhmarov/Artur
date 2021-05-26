@@ -1,6 +1,7 @@
 <html>
 <?php
 include 'db.php';
+require 'config/bootstrap.php';
 if($_GET['task'] == 'add_shipper'){
     ?>
     <form method="post">
@@ -17,17 +18,12 @@ if($_GET['task'] == 'add_shipper'){
     if($_POST['add']){
         $new_fio_shipper = $_POST['fio_shipper'];
         $new_telephone_shipper = $_POST['telephone_shipper'];
-        $query="INSERT INTO `shipper`
-                (
-                `name_shipper`,
-                `telephone_shipper`
-                )
-                VALUES
-                (
-                '$new_fio_shipper',
-                '$new_telephone_shipper'
-                )";
-        $res=mysqli_query($connection,$query);
+        $shipper = new shipper();
+        $shipper->setName_shipper($new_fio_shipper);
+        $shipper->setTelephone_shipper($new_telephone_shipper);
+        $entityManager->persist($shipper);
+        $entityManager->flush();
+        var_dump($shipper);
         $_GET['task'] = 'shipper_list_2';
     }
 }

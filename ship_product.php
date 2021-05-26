@@ -41,7 +41,7 @@
             $id_product = mysqli_real_escape_string($connection, $_POST['id_product']);
             $id_shipper = mysqli_real_escape_string($connection, $_POST['id_shipper']);
 
-            $sql = "INSERT INTO `ship_product` 
+            $sql = "INSERT INTO `product_ship` 
                     ( 
                     `id_product`,
                     `id_shipper`
@@ -57,7 +57,7 @@
     if($_GET['task'] == 'del_ship_product')
     {
         $del_per=$_GET['id_ship_product'];
-        $query="DELETE FROM `ship_product` WHERE `ship_product`.`id` = '$del_per'";
+        $query="DELETE FROM `product_ship` WHERE `product_ship`.`id` = '$del_per'";
         $del=mysqli_query($connection, $query);
         $_GET['task'] = 'ship_product';
     }
@@ -66,15 +66,15 @@
         if($_POST['upd']){
             $id_product=$_POST['id_product'];
             $id_shipper=$_POST['id_shipper'];
-            $query="UPDATE `ship_product` 
+            $query="UPDATE `product_ship` 
                 SET 
                 `id_product`='$id_product',
                  `id_shipper`='$id_shipper' 
-                WHERE `ship_product`.`id` = '$id_old'";
+                WHERE `product_ship`.`id` = '$id_old'";
             $res=mysqli_query($connection,$query);
             $_GET['task'] = 'ship_product';
         }
-        $query="SELECT * FROM `ship_product` WHERE `ship_product`.`id` ='$id_old'";
+        $query="SELECT * FROM `product_ship` WHERE `product_ship`.`id` ='$id_old'";
         $res=mysqli_query($connection,$query);
         $row=$res->fetch_object();
         $id_product=$row->id_product;
@@ -128,34 +128,6 @@
             <input type = "submit" name="upd" value = Изменить>
         </form>
         <?
-    }
-    if($_GET['task'] == 'marketer_list_2'){
-        $res = mysqli_query($connection,'SELECT* FROM marketer');
-        ?>
-        <H3> Продавцы </H3>
-        <table class="table table-bordered table-hover table-striped" style="width:600px;">
-            <tr>
-                <th>Номер продавца</th>
-                <th>Имя продавца</th>
-                <th>Возраст</th>
-                <th>Пол</th>
-                <th>Номер отдела</th>
-            </tr>
-            <?php
-            while ($row = $res->fetch_object()) {
-                ?>
-                <tr>
-                    <td><?=$row->id_marketer;?></td>
-                    <td><?=$row->name_marketer;?></td>
-                    <td><?=$row->age_marketer;?></td>
-                    <td><?=$row->gender;?></td>
-                    <td><?=$row->id_dep;?></td>
-                </tr>
-                <?
-            }
-            ?>
-        </table>
-        <?php
     }
 ?>
 </html>
