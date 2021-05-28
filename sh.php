@@ -1,6 +1,7 @@
 <html>
 <?php
 include 'db.php';
+require_once 'src/sh.php';
 if($_GET['task'] == 'add_order'){
     ?>
     <form method="post">
@@ -8,11 +9,10 @@ if($_GET['task'] == 'add_order'){
         <p>Номер товара</p>
         <select name="id_product" required>
             <?
-            $query="SELECT `id_product` FROM `product`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
+            $res=R::getAll("SELECT `id_product` FROM `product`");
+            foreach($res as $row){
                 ?>
-                <option><?= $row->id_product ?></option>
+                <option><?= $row['id_product'] ?></option>
                 <?
             }
             ?>
@@ -24,11 +24,10 @@ if($_GET['task'] == 'add_order'){
         <p>Номер поставщика</p>
         <select name="id_shipper" required>
             <?
-            $query="SELECT `id_shipper` FROM `shipper`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
+            $res=R::getAll("SELECT `id_shipper` FROM `shipper`");
+            foreach($res as $row){
                 ?>
-                <option><?= $row->id_shipper ?></option>
+                <option><?= $row['id_shipper'] ?></option>
                 <?
             }
             ?>
@@ -48,65 +47,43 @@ if($_GET['task'] == 'add_order'){
         $quantity = $_POST['quantity_sh'];
         $id_shipper=$_POST['id_shipper'];
         $order_status=$_POST['order_status'];
-        $query="INSERT INTO `storehouse`
-                (
-                `id_product`,
-                `quantity_in_sh`,
-                `id_shipper`,
-                `order_status`
-                )
-                VALUES
-                (
-                '$id_product',
-                '$quantity',
-                '$id_shipper',
-                '$order_status'
-                )";
-        $res=mysqli_query($connection,$query);
+        $sh = new sh();
+        $sh->add($id_product,$quantity,$id_shipper,$order_status);
         $_GET['task'] = 'sh_list_2';
     }
 }
 if($_GET['task'] == 'edit_sh'){
     $id_old=$_GET['id_order'];
+    $sh = new sh();
     if($_POST['upd']){
         $id_product = $_POST['id_product'];
         $quantity = $_POST['quantity_sh'];
         $id_shipper = $_POST['id_shipper'];
         $order_status= $_POST['order_status'];
-        $query="UPDATE `storehouse` 
-                SET 
-                `id_product` = '$id_product',
-                 `quantity_in_sh` = '$quantity',
-                 `id_shipper` = '$id_shipper',
-                 `order_status` = '$order_status'
-                WHERE `storehouse`.`id_order` = '$id_old'";
-        $res=mysqli_query($connection,$query);
+        $sh->update($id_old,$id_product,$quantity,$id_shipper,$order_status);
         $_GET['task'] = 'sh_list_2';
     }
-    $query="SELECT * FROM `storehouse` WHERE `storehouse`.`id_order` ='$id_old'";
-    $res=mysqli_query($connection,$query);
-    $row=$res->fetch_object();
-    $id_product=$row->id_product;
-    $quantity_in_sh=$row->quantity_in_sh;
-    $id_shipper=$row->id_shipper;
-    $order_status = $row->order_status;
+    $row=$sh->getid($id_old);
+    $id_product=$row[0]['id_product'];
+    $quantity_in_sh=$row[0]['quantity_in_sh'];
+    $id_shipper=$row[0]['id_shipper'];
+    $order_status = $row[0]['order_status'];
     ?>
     <form method="post">
         <br>
         <p>Номер товара</p>
         <select name="id_product" required>
             <?
-            $query="SELECT `id_product` FROM `product`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
-                if($row->id_product == $id_product){
+            $res=R::getAll("SELECT `id_product` FROM `product`");
+            foreach($res as $row){
+                if($row['id_product'] == $id_product){
                     ?>
-                    <option selected><?= $row->id_product ?></option>
+                    <option selected><?= $row['id_product'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row->id_product ?></option>
+                    <option><?= $row['id_product'] ?></option>
                     <?
                 }
             }
@@ -119,17 +96,16 @@ if($_GET['task'] == 'edit_sh'){
         <p>Номер поставщика</p>
         <select name="id_shipper" required>
             <?
-            $query="SELECT `id_shipper` FROM `shipper`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
-                if($row->id_shipper == $id_shipper){
+            $res=R::getAll("SELECT `id_shipper` FROM `shipper`");
+            foreach($res as $row){
+                if($row['id_shipper'] == $id_shipper){
                     ?>
-                    <option selected><?= $row->id_shipper ?></option>
+                    <option selected><?= $row['id_shipper'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row->id_shipper ?></option>
+                    <option><?= $row['id_shipper'] ?></option>
                     <?
                 }
             }
@@ -159,8 +135,8 @@ if($_GET['task'] == 'edit_sh'){
 }
 if($_GET['task'] == 'del_sh' ){
     $del_per=$_GET['id_order'];
-    $query="DELETE FROM `storehouse` WHERE `storehouse`.`id_order` = '$del_per'";
-    $del=mysqli_query($connection, $query);
+    $sh = new sh();
+    $sh->delete($del_per);
     $_GET['task'] = 'sh_list';
 }
 if($_GET['task']=='carry_product'){
@@ -176,22 +152,18 @@ if($_GET['task']=='carry_product'){
     <?
     if($_POST['carry']){
         $id_old=$_GET['id_order'];
-        $query="SELECT `quantity_in_sh`,`id_product`,`order_status`FROM `storehouse` WHERE `id_order` ='$id_old'";
-        $res = mysqli_query($connection,$query);
-        $row= $res->fetch_object();
-        $id_tovara = $row->id_product;
-        if($row->order_status == 'Есть на складе') {
-            if ($_POST['quantity'] < $row->quantity_in_sh) {
-                $new_quantity = $row->quantity_in_sh - $_POST['quantity'];
-                $query = "UPDATE `storehouse` 
+        $row=R::getAll("SELECT `quantity_in_sh`,`id_product`,`order_status`FROM `storehouse` WHERE `id_order` ='$id_old'");
+        $id_tovara = $row[0]['id_product'];
+        if($row[0]['order_status'] == 'Есть на складе') {
+            if ($_POST['quantity'] < $row[0]['quantity_in_sh']) {
+                $new_quantity = $row[0]['quantity_in_sh'] - $_POST['quantity'];
+                $query = R::exec("UPDATE `storehouse` 
                 SET 
                  `quantity_in_sh`='$new_quantity'
-                WHERE `storehouse`.`id_order` = '$id_old'";
-                $res = mysqli_query($connection, $query);
-
+                WHERE `storehouse`.`id_order` = '$id_old'");
                 echo "Товар перемещен в магазин в количестве ", $_POST['quantity'];
             } else {
-                echo "Количество не может быть больше чем ", $row->quantity_in_sh;
+                echo "Количество не может быть больше чем ", $row[0]['quantity_in_sh'];
             }
         }else{
             echo "Товара нету на складе";
@@ -199,7 +171,8 @@ if($_GET['task']=='carry_product'){
     }
 }
 if($_GET['task'] == 'sh_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM storehouse');
+    $sh = new sh();
+    $res = $sh->read('storehouse');
     ?>
     <H3> Склад </H3>
     <table class="table table-bordered table-hover table-striped">
@@ -211,14 +184,13 @@ if($_GET['task'] == 'sh_list_2'){
             <th>Статус заказа</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
-            <tr>
-                <td><?=$row->id_order;?></td>
-                <td><?=$row->id_product;?></td>
-                <td><?=$row->quantity_in_sh;?></td>
-                <td><?=$row->id_shipper;?></td>
-                <td><?=$row->order_status;?></td>
+                <td><?=$row['id_order'];?></td>
+                <td><?=$row['id_product'];?></td>
+                <td><?=$row['quantity_in_sh'];?></td>
+                <td><?=$row['id_shipper'];?></td>
+                <td><?=$row['order_status'];?></td>
             </tr>
             <?
         }

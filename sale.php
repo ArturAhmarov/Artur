@@ -1,6 +1,7 @@
 <html>
 <?php
 include 'db.php';
+require_once 'src/sale.php';
 if($_GET['task'] == 'add_sale'){
     ?>
     <form method="post">
@@ -8,11 +9,10 @@ if($_GET['task'] == 'add_sale'){
         <p>Номер покупателя</p>
         <select name="id_buyer" >
             <?
-            $query="SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
+            $res=R::getAll("SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`");
+            foreach($res as $row){
                 ?>
-                <option><?= $row->id_buyer ?></option>
+                <option><?= $row['id_buyer'] ?></option>
                 <?
             }
             ?>
@@ -24,11 +24,10 @@ if($_GET['task'] == 'add_sale'){
         <p>Номер продавца</p>
         <select name="id_marketer" required>
             <?
-            $query="SELECT `id_marketer` FROM `marketer`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
+            $res=R::getAll("SELECT `id_marketer` FROM `marketer`");
+            foreach($res as $row){
                 ?>
-                <option><?= $row->id_marketer ?></option>
+                <option><?= $row['id_marketer'] ?></option>
                 <?
             }
             ?>
@@ -41,59 +40,40 @@ if($_GET['task'] == 'add_sale'){
         $id_buyer = $_POST['id_buyer'];
         $date = $_POST['date'];
         $id_marketer=$_POST['id_marketer'];
-        $query="INSERT INTO `sale`
-                (
-                `id_buyer`,
-                `date_sale`,
-                `id_marketer`
-                )
-                VALUES
-                (
-                '$id_buyer',
-                '$date',
-                '$id_marketer'
-                )";
-        $res=mysqli_query($connection,$query);
+        $sale = new sale();
+        $sale->add($id_buyer,$date,$id_marketer);
         $_GET['task'] ='sales_list_2';
     }
 }
 if($_GET['task'] == 'edit_sale'){
     $id_old=$_GET['id_sale'];
+    $sale = new sale();
     if($_POST['upd']){
         $id_buyer = $_POST['id_buyer'];
         $date = $_POST['date'];
         $id_marketer = $_POST['id_marketer'];
-        $query="UPDATE `sale` 
-                SET 
-                `id_buyer` = '$id_buyer',
-                 `date_sale` = '$date',
-                 `id_marketer` = '$id_marketer'
-                WHERE `sale`.`id_sale` = '$id_old'";
-        $res=mysqli_query($connection,$query);
+        $sale->update($id_old,$id_buyer,$date,$id_marketer);
         $_GET['task'] = 'sales_list_2';
     }
-    $query="SELECT * FROM `sale` WHERE `sale`.`id_sale` ='$id_old'";
-    $res=mysqli_query($connection,$query);
-    $row=$res->fetch_object();
-    $id_buyer=$row->id_buyer;
-    $date = $row->date_sale;
-    $id_marketer = $row->id_marketer;
+    $row=$sale->getid($id_old);
+    $id_buyer=$row[0]['id_buyer'];
+    $date = $row[0]['date_sale'];
+    $id_marketer = $row[0]['id_marketer'];
     ?>
     <form method="post">
         <p>Номер покупателя</p>
         <select name="id_buyer" required>
             <?
-            $query="SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
-                if($row->id_buyer == $id_buyer){
+            $res=R::getAll("SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`");
+            foreach($res as $row){
+                if($row['id_buyer'] == $id_buyer){
                     ?>
-                    <option selected><?= $row->id_buyer ?></option>
+                    <option selected><?= $row['id_buyer'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row->id_buyer ?></option>
+                    <option><?= $row['id_buyer'] ?></option>
                     <?
                 }
             }
@@ -104,17 +84,16 @@ if($_GET['task'] == 'edit_sale'){
         <p>Номер продавца</p>
         <select name="id_marketer" required>
             <?
-            $query="SELECT `id_marketer` FROM `marketer`";
-            $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
-                if($row->id_marketer == $id_marketer){
+            $res=R::getAll("SELECT `id_marketer` FROM `marketer`");
+            foreach($res as $row){
+                if($row['id_marketer'] == $id_marketer){
                     ?>
-                    <option selected><?= $row->id_marketer ?></option>
+                    <option selected><?= $row['id_marketer'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row->id_marketer ?></option>
+                    <option><?= $row['id_marketer'] ?></option>
                     <?
                 }
             }
@@ -127,12 +106,13 @@ if($_GET['task'] == 'edit_sale'){
 }
 if($_GET['task'] == 'del_sale' ){
     $del_per=$_GET['id_sale'];
-    $query="DELETE FROM `sale` WHERE `sale`.`id_sale` = '$del_per'";
-    $del=mysqli_query($connection, $query);
+    $sale = new sale();
+    $sale->delete($del_per);
     $_GET['task'] = 'sales_list';
 }
 if($_GET['task'] == 'sales_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM sale');
+    $sale = new sale();
+    $res = $sale->read('sale');
     ?>
     <H3> Продажи </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
@@ -143,13 +123,13 @@ if($_GET['task'] == 'sales_list_2'){
         <th>Номер продавца</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_sale;?></td>
-            <td><?=$row->id_buyer;?></td>
-            <td><?=$row->date_sale;?></td>
-            <td><?=$row->id_marketer;?></td>
+            <td><?=$row['id_sale'];?></td>
+            <td><?=$row['id_buyer'];?></td>
+            <td><?=$row['date_sale'];?></td>
+            <td><?=$row['id_marketer'];?></td>
         </tr>
         <?
     }
@@ -159,7 +139,7 @@ if($_GET['task'] == 'sales_list_2'){
 }
 if($_GET['task'] == 'sale_check' ){
     $buf=$_GET['id_sale'];
-    $res = mysqli_query($connection, "SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id_product WHERE b.id_sale ='$buf'");
+    $res = R::getAll( "SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id_product WHERE b.id_sale ='$buf'");
     ?>
     <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
     <tr>
@@ -169,13 +149,13 @@ if($_GET['task'] == 'sale_check' ){
         <th>Количество купленного товара </th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?= $row->id_sale; ?></td>
-            <td><?= $row->name_product; ?></td>
-            <td><?= $row->cost; ?></td>
-            <td><?= $row->quantity_sale; ?></td>
+            <td><?= $row['id_sale']; ?></td>
+            <td><?= $row['name_product']; ?></td>
+            <td><?= $row['cost']; ?></td>
+            <td><?= $row['quantity_sale']; ?></td>
         </tr>
         <?
     }

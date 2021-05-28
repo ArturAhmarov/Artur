@@ -39,6 +39,8 @@ include 'buyer.php';
 include 'sale.php';
 include 'sh.php';
 include 'query_designer.php';
+require_once 'src/shipper.php';
+require_once 'rb\rb.php';
 
 // Получаем список файлов для миграций
 function getMigrationFiles($connection) {
@@ -167,7 +169,7 @@ function link_bar($page, $pages_count)
         if ($j != $pages_count) echo ' ';
     }
     return true;
-} // Конец функции
+}
 if($_GET['task'] == 'ship_product'){
     $res = mysqli_query($connection,'SELECT * FROM product_ship
                                                 INNER JOIN product ON product.id_product = product_ship.id_product
@@ -356,7 +358,7 @@ if($_GET['task'] == 'owner_list'){
     <?php
 }
 if($_GET['task'] == 'shipper_list'){
-    $res = mysqli_query($connection,'SELECT* FROM shipper');
+    $res = $shipper->read('shipper');
     ?>
     <H3> Поставщики </H3>
     <a href="?task=add_shipper" class="c">Добавить поставщика</a>
@@ -369,15 +371,14 @@ if($_GET['task'] == 'shipper_list'){
         <th colspan="2">Настройка</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_shipper;?></td>
-            <td><?=$row->name_shipper;?></td>
-            <td><?=$row->telephone_shipper;?></td>
-
-            <td><a href="?task=edit_shipper&id_shipper=<?=$row->id_shipper;?>">Изменить</a></td>
-            <td><a href="?task=del_shipper&id_shipper=<?=$row->id_shipper;?>">Удалить</a></td>
+            <td><?=$row['id_shipper'];?></td>
+            <td><?=$row['name_shipper'];?></td>
+            <td><?=$row['telephone_shipper'];?></td>
+            <td><a href="?task=edit_shipper&id_shipper=<?=$row['id_shipper'];?>">Изменить</a></td>
+            <td><a href="?task=del_shipper&id_shipper=<?=$row['id_shipper'];?>">Удалить</a></td>
         </tr>
         <?
     }
@@ -560,7 +561,7 @@ if($_GET['task'] == 'request_1'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT p.id_shipper,s.name_shipper FROM storehouse as p LEFT JOIN `shipper` s ON p.id_shipper = s.id_shipper WHERE p.id_product = '$buf'");
+        $res = R::getAll( "SELECT p.id_shipper,s.name_shipper FROM storehouse as p LEFT JOIN `shipper` s ON p.id_shipper = s.id_shipper WHERE p.id_product = '$buf'");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -568,11 +569,11 @@ if($_GET['task'] == 'request_1'){
             <th>ФИО поставщика</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_shipper; ?></td>
-                <td><?= $row->name_shipper; ?></td>
+                <td><?= $row['id_shipper']; ?></td>
+                <td><?= $row['name_shipper']; ?></td>
             </tr>
             <?
         }
@@ -588,7 +589,7 @@ if($_GET['task'] == 'request_2'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id_product WHERE b.id_sale ='$buf'");
+        $res = R::getAll("SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id_product WHERE b.id_sale ='$buf'");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -598,13 +599,13 @@ if($_GET['task'] == 'request_2'){
             <th>Количество купленного товара </th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_sale; ?></td>
-                <td><?= $row->name_product; ?></td>
-                <td><?= $row->cost; ?></td>
-                <td><?= $row->quantity_sale; ?></td>
+                <td><?= $row['id_sale']; ?></td>
+                <td><?= $row['name_product']; ?></td>
+                <td><?= $row['cost']; ?></td>
+                <td><?= $row['quantity_sale']; ?></td>
             </tr>
             <?
         }
@@ -620,7 +621,7 @@ if($_GET['task'] == 'request_3'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf = $_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT COUNT(*) as `count`, name_product
+        $res = R::getAll( "SELECT COUNT(*) as `count`, name_product
                                                 FROM `sale_product` AS s LEFT JOIN product p ON s.id_product = p.id_product 
                                                 WHERE s.id_product = '$buf'");
         ?>
@@ -630,12 +631,11 @@ if($_GET['task'] == 'request_3'){
             <th>Название товара </th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
-
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->count; ?></td>
-                <td><?= $row->name_product; ?></td>
+                <td><?= $row['count']; ?></td>
+                <td><?= $row['name_product']; ?></td>
             </tr>
             <?
         }
@@ -651,7 +651,7 @@ if($_GET['task'] == 'request_4'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT * FROM `buyer` WHERE date_visit = '$buf'");
+        $res = R::getAll( "SELECT * FROM `buyer` WHERE date_visit = '$buf'");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -662,14 +662,14 @@ if($_GET['task'] == 'request_4'){
             <th>Номер магазина</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_buyer; ?></td>
-                <td><?= $row->date_visit; ?></td>
-                <td><?= $row->id_marketer; ?></td>
-                <td><?= $row->id_dep; ?></td>
-                <td><?= $row->id_magazine; ?></td>
+                <td><?= $row['id_buyer']; ?></td>
+                <td><?= $row['date_visit']; ?></td>
+                <td><?= $row['id_marketer']; ?></td>
+                <td><?= $row['id_dep']; ?></td>
+                <td><?= $row['id_magazine']; ?></td>
             </tr>
             <?
         }
@@ -685,7 +685,7 @@ if($_GET['task'] == 'request_5'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT p.id_sale,s.id_buyer FROM sale_product as p LEFT JOIN `sale` s ON p.id_sale = s.id_sale WHERE p.id_product = '$buf'");
+        $res = R::getAll("SELECT p.id_sale,s.id_buyer FROM sale_product as p LEFT JOIN `sale` s ON p.id_sale = s.id_sale WHERE p.id_product = '$buf'");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -693,11 +693,11 @@ if($_GET['task'] == 'request_5'){
             <th>Номер покупателя</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_sale; ?></td>
-                <td><?= $row->id_buyer; ?></td>
+                <td><?= $row['id_sale']; ?></td>
+                <td><?= $row['id_buyer']; ?></td>
             </tr>
             <?
         }
@@ -713,7 +713,7 @@ if($_GET['task'] == 'request_6') {
     <?php
     if ($_POST['submit'] && $_POST['text_request'] != " ") {
         $buf = $_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT id_product,name_product,cost,quantity_product FROM product WHERE id_product = '$buf'");
+        $res = R::getAll( "SELECT id_product,name_product,cost,quantity_product FROM product WHERE id_product = '$buf'");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -723,13 +723,13 @@ if($_GET['task'] == 'request_6') {
             <th>Количество</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_product; ?></td>
-                <td><?= $row->name_product; ?></td>
-                <td><?= $row->cost; ?></td>
-                <td><?= $row->quantity_product; ?></td>
+                <td><?= $row['id_product']; ?></td>
+                <td><?= $row['name_product']; ?></td>
+                <td><?= $row['cost']; ?></td>
+                <td><?= $row['quantity_product']; ?></td>
             </tr>
             <?
         }
@@ -745,13 +745,12 @@ if($_GET['task'] == 'request_7') {
     <?php
     if ($_POST['submit'] && $_POST['text_request'] != " ") {
         $buf = mysqli_real_escape_string($connection,$_POST['text_request']);
-        $res = mysqli_query($connection, "SELECT * FROM product WHERE type = '$buf'");
+        $res = R::getAll("SELECT * FROM product WHERE type = '$buf'");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
             <th>Номер товара</th>
             <th>Наименование товара</th>
-            <th>Номер поставщика</th>
             <th>Цена</th>
             <th>Себестоимость</th>
             <th>Количество товара в магазине</th>
@@ -760,18 +759,17 @@ if($_GET['task'] == 'request_7') {
             <th>Номер магазина</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?=$row->id_product;?></td>
-                <td><?=$row->name_product;?></td>
-                <td><?=$row->id_shipper;?></td>
-                <td><?=$row->cost;?></td>
-                <td><?=$row->net_cost;?></td>
-                <td><?=$row->quantity_product;?></td>
-                <td><?=$row->type;?></td>
-                <td><?=$row->id_dep;?></td>
-                <td><?=$row->id_magazine;?></td>
+                <td><?=$row['id_product'];?></td>
+                <td><?=$row['name_product'];?></td>
+                <td><?=$row['cost'];?></td>
+                <td><?=$row['net_cost'];?></td>
+                <td><?=$row['quantity_product'];?></td>
+                <td><?=$row['type'];?></td>
+                <td><?=$row['id_dep'];?></td>
+                <td><?=$row['id_magazine'];?></td>
             </tr>
             <?
         }
@@ -787,7 +785,7 @@ if($_GET['task'] == 'request_8'){
     <?php
     if($_POST['submit']) {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT p.id_marketer,p.name_marketer,s.floor_dep 
+        $res = R::getAll("SELECT p.id_marketer,p.name_marketer,s.floor_dep 
                                                 FROM marketer as p LEFT JOIN department s ON p.id_dep = s.id_dep 
                                                 WHERE s.floor_dep = '$buf'");
         ?>
@@ -798,12 +796,12 @@ if($_GET['task'] == 'request_8'){
             <th>Номер этажа</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_marketer; ?></td>
-                <td><?= $row->name_marketer; ?></td>
-                <td><?= $row->floor_dep; ?></td>
+                <td><?= $row['id_marketer']; ?></td>
+                <td><?= $row['name_marketer']; ?></td>
+                <td><?= $row['floor_dep']; ?></td>
             </tr>
             <?
         }
@@ -819,7 +817,7 @@ if($_GET['task'] == 'request_9'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT s.id_product,s.name_product,p.quantity_in_sh,p.order_status
+        $res = R::getAll("SELECT s.id_product,s.name_product,p.quantity_in_sh,p.order_status
                                                 FROM storehouse as p LEFT JOIN product s ON p.id_product = s.id_product 
                                                 WHERE p.id_order = '$buf'");
         ?>
@@ -831,13 +829,13 @@ if($_GET['task'] == 'request_9'){
             <th>Статус заказа</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_product; ?></td>
-                <td><?= $row->name_product; ?></td>
-                <td><?= $row->quantity_in_sh; ?></td>
-                <td><?= $row->order_status; ?></td>
+                <td><?= $row['id_product']; ?></td>
+                <td><?= $row['name_product']; ?></td>
+                <td><?= $row['quantity_in_sh']; ?></td>
+                <td><?= $row['order_status']; ?></td>
             </tr>
             <?
         }

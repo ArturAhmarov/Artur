@@ -1,6 +1,10 @@
 <html>
 <?php
 include 'db.php';
+require_once 'rb/rb.php';
+if (!R::testConnection()) {
+    R:: setup('mysql:host=127.0.0.1;dbname=kursach', 'mysql', 'mysql');
+}
 if($_GET['task'] == 'query_designer'){
     ?>
     <style>
@@ -67,8 +71,7 @@ if($_GET['table_name'] == 'product'){
         $value = $_POST['value'];
         $product_row = $_POST['product_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$product_row` $act $value ";
-        $res = mysqli_query($connection,$query);
+        $res =R::getAll( "SELECT * FROM `$table` WHERE `$table`.`$product_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped">
             <tr>
@@ -83,18 +86,18 @@ if($_GET['table_name'] == 'product'){
                 <th>Номер магазина</th>
             </tr>
             <?php
-            while ($row = $res->fetch_object()) {
+            foreach ($res as $row) {
                 ?>
                 <tr>
-                    <td><?=$row->id_product;?></td>
-                    <td><?=$row->name_product;?></td>
-                    <td><?=$row->id_shipper;?></td>
-                    <td><?=$row->cost;?></td>
-                    <td><?=$row->net_cost;?></td>
-                    <td><?=$row->quantity_product;?></td>
-                    <td><?=$row->type;?></td>
-                    <td><?=$row->id_dep;?></td>
-                    <td><?=$row->id_magazine;?></td>
+                    <td><?=$row['id_product'];?></td>
+                    <td><?=$row['name_product'];?></td>
+                    <td><?=$row['id_shipper'];?></td>
+                    <td><?=$row['cost'];?></td>
+                    <td><?=$row['net_cost'];?></td>
+                    <td><?=$row['quantity_product'];?></td>
+                    <td><?=$row['type'];?></td>
+                    <td><?=$row['id_dep'];?></td>
+                    <td><?=$row['id_magazine'];?></td>
                 </tr>
                 <?
             }
@@ -131,8 +134,7 @@ if($_GET['table_name'] == 'sale'){
         $value = $_POST['value'];
         $name_row = $_POST['sale_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ";
-        $res = mysqli_query($connection,$query);
+        $res = R::getAll( "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
             <tr>
@@ -142,13 +144,13 @@ if($_GET['table_name'] == 'sale'){
                 <th>Номер продавца</th>
             </tr>
             <?php
-            while ($row = $res->fetch_object()) {
+            foreach ($res as $row) {
                 ?>
                 <tr>
-                    <td><?=$row->id_sale;?></td>
-                    <td><?=$row->id_buyer;?></td>
-                    <td><?=$row->date_sale;?></td>
-                    <td><?=$row->id_marketer;?></td>
+                    <td><?=$row['id_sale'];?></td>
+                    <td><?=$row['id_buyer'];?></td>
+                    <td><?=$row['date_sale'];?></td>
+                    <td><?=$row['id_marketer'];?></td>
                 </tr>
                 <?
             }
@@ -185,8 +187,7 @@ if($_GET['table_name'] == 'buyer'){
         $value = $_POST['value'];
         $name_row = $_POST['name_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ";
-        $res = mysqli_query($connection,$query);
+        $res = R::getAll( "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -197,14 +198,14 @@ if($_GET['table_name'] == 'buyer'){
             <th>Номер магазина</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?=$row->id_buyer;?></td>
-                <td><?=$row->date_visit;?></td>
-                <td><?=$row->id_marketer;?></td>
-                <td><?=$row->id_dep;?></td>
-                <td><?=$row->id_magazine;?></td>
+                <td><?=$row['id_buyer'];?></td>
+                <td><?=$row['date_visit'];?></td>
+                <td><?=$row['id_marketer'];?></td>
+                <td><?=$row['id_dep'];?></td>
+                <td><?=$row['id_magazine'];?></td>
             </tr>
             <?
         }
@@ -241,8 +242,7 @@ if($_GET['table_name'] == 'marketer') {
         $value = $_POST['value'];
         $name_row = $_POST['name_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ";
-        $res = mysqli_query($connection, $query);
+        $res =R::getAll( "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -253,14 +253,14 @@ if($_GET['table_name'] == 'marketer') {
             <th>Номер отдела</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_marketer; ?></td>
-                <td><?= $row->name_marketer; ?></td>
-                <td><?= $row->age_marketer; ?></td>
-                <td><?= $row->gender; ?></td>
-                <td><?= $row->id_dep; ?></td>
+                <td><?= $row['id_marketer']; ?></td>
+                <td><?= $row['name_marketer']; ?></td>
+                <td><?= $row['age_marketer']; ?></td>
+                <td><?= $row['gender']; ?></td>
+                <td><?= $row['id_dep']; ?></td>
             </tr>
             <?
         }
@@ -295,8 +295,7 @@ if($_GET['table_name'] == 'owner') {
         $value = $_POST['value'];
         $name_row = $_POST['name_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ";
-        $res = mysqli_query($connection, $query);
+        $res = R::getAll("SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -305,12 +304,12 @@ if($_GET['table_name'] == 'owner') {
             <th>Телефон</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach(res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_owner; ?></td>
-                <td><?= $row->name_owner; ?></td>
-                <td><?= $row->telephone_owner; ?></td>
+                <td><?= $row['id_owner']; ?></td>
+                <td><?= $row['name_owner']; ?></td>
+                <td><?= $row['telephone_owner']; ?></td>
             </tr>
             <?
         }
@@ -345,8 +344,7 @@ if($_GET['table_name'] == 'shipper') {
         $value = $_POST['value'];
         $name_row = $_POST['name_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ";
-        $res = mysqli_query($connection, $query);
+        $res = R::getAll("SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -355,12 +353,12 @@ if($_GET['table_name'] == 'shipper') {
             <th>Телефон</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_shipper; ?></td>
-                <td><?= $row->name_shipper; ?></td>
-                <td><?= $row->telephone_shipper; ?></td>
+                <td><?= $row['id_shipper']; ?></td>
+                <td><?= $row['name_shipper']; ?></td>
+                <td><?= $row['telephone_shipper']; ?></td>
             </tr>
             <?
         }
@@ -396,8 +394,7 @@ if($_GET['table_name'] == 'department') {
         $value = $_POST['value'];
         $name_row = $_POST['name_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ";
-        $res = mysqli_query($connection, $query);
+        $res = R::getAll("SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -407,13 +404,13 @@ if($_GET['table_name'] == 'department') {
             <th>Номер магазина</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_dep; ?></td>
-                <td><?= $row->name_dep; ?></td>
-                <td><?= $row->floor_dep; ?></td>
-                <td><?= $row->id_magazine; ?></td>
+                <td><?= $row['id_dep']; ?></td>
+                <td><?= $row['name_dep']; ?></td>
+                <td><?= $row['floor_dep']; ?></td>
+                <td><?= $row['id_magazine']; ?></td>
             </tr>
             <?
         }
@@ -449,8 +446,7 @@ if($_GET['table_name'] == 'magazine') {
         $value = $_POST['value'];
         $name_row = $_POST['name_row'];
         $act = $_POST['act'];
-        $query = "SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ";
-        $res = mysqli_query($connection, $query);
+        $res = R::getAll("SELECT * FROM `$table` WHERE `$table`.`$name_row` $act $value ");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -460,13 +456,13 @@ if($_GET['table_name'] == 'magazine') {
             <th>Номер владельца</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?= $row->id_magazine; ?></td>
-                <td><?= $row->name_magazine; ?></td>
-                <td><?= $row->magazine_type; ?></td>
-                <td><?= $row->id_owner; ?></td>
+                <td><?= $row['id_magazine']; ?></td>
+                <td><?= $row['name_magazine']; ?></td>
+                <td><?= $row['magazine_type']; ?></td>
+                <td><?= $row['id_owner']; ?></td>
             </tr>
             <?
         }

@@ -1,6 +1,7 @@
 <html>
 <?php
 include 'db.php';
+require_once 'src/owner.php';
 if($_GET['task'] == 'add_owner'){
     ?>
     <form method="post">
@@ -17,17 +18,8 @@ if($_GET['task'] == 'add_owner'){
     if($_POST['add']){
         $new_fio_owner = $_POST['fio_owner'];
         $new_telephone_owner = $_POST['telephone_owner'];
-        $query="INSERT INTO `owner`
-                (
-                `name_owner`,
-                `telephone_owner`
-                )
-                VALUES
-                (
-                '$new_fio_owner',
-                '$new_telephone_owner'
-                )";
-        $res=mysqli_query($connection,$query);
+        $owner = new owner();
+        $owner->add($new_fio_owner,$new_telephone_owner);
         $_GET['task'] = 'owner_list_2';
     }
 }
@@ -36,19 +28,14 @@ if($_GET['task'] == 'edit_owner'){
     if($_POST['upd']){
         $new_name=$_POST['old_owner_name'];
         $new_telephone=$_POST['old_telephone_owner'];
-        $query="UPDATE `owner` 
-                SET 
-                `name_owner`='$new_name',
-                 `telephone_owner`='$new_telephone'
-                WHERE `owner`.`id_owner` = '$id_old'";
-        $res=mysqli_query($connection,$query);
+        $owner = new owner();
+        $owner->update($id_old,$new_name,$new_telephone);
         $_GET['task'] = 'owner_list_2';
     }
-    $query="SELECT * FROM `owner` WHERE `owner`.`id_owner` ='$id_old'";
-    $res=mysqli_query($connection,$query);
-    $row=$res->fetch_object();
-    $old_name=$row->name_owner;
-    $old_telephone=$row->telephone_owner;
+    $owner = new owner();
+    $row=$owner->getid($id_old);
+    $old_name=$row[0]['name_owner'];
+    $old_telephone=$row[0]['telephone_owner'];
     ?>
     <form method="post">
         <br>
@@ -65,12 +52,13 @@ if($_GET['task'] == 'edit_owner'){
 if($_GET['task'] == 'del_owner')
 {
     $del_per=$_GET['id_owner'];
-    $query="DELETE FROM `owner` WHERE `owner`.`id_owner` = '$del_per'";
-    $del=mysqli_query($connection, $query);
+    $owner = new owner();
+    $owner->delete($del_per);
     $_GET['task'] = 'owner_list';
 }
 if($_GET['task'] == 'owner_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM owner');
+    $owner = new owner();
+    $res = $owner->read('owner');
     ?>
     <H3> Владельцы </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 600px;" ">
@@ -80,12 +68,12 @@ if($_GET['task'] == 'owner_list_2'){
         <th>Номер телефона</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_owner;?></td>
-            <td><?=$row->name_owner;?></td>
-            <td><?=$row->telephone_owner;?></td>
+            <td><?=$row['id_owner'];?></td>
+            <td><?=$row['name_owner'];?></td>
+            <td><?=$row['telephone_owner'];?></td>
         </tr>
         <?
     }

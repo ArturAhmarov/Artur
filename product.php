@@ -1,6 +1,7 @@
 <html>
 <?php
 include 'db.php';
+require_once 'src/product.php';
 if($_GET['task'] == 'add_product'){
     ?>
     <form method="post">
@@ -23,12 +24,13 @@ if($_GET['task'] == 'add_product'){
         <p>Номер отдела</p>
         <select name="new_product_dep_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_dep` FROM `department`" );
+        $product=new product();
+        $res=R::getAll("SELECT `id_dep` FROM `department`");
         ?>
         <?php
-        while($row=$res->fetch_object()){
+        foreach ($res as $row){
             ?>
-            <option><?=$row->id_dep;?></option>
+            <option><?=$row['id_dep'];?></option>
             <?
         }
         ?>
@@ -37,12 +39,12 @@ if($_GET['task'] == 'add_product'){
         <p>Номер магазина</p>
         <select name="new_product_magaizne_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_magazine` FROM `magazine`" );
+        $res=R::getAll("SELECT `id_magazine` FROM `magazine`" );
         ?>
         <?php
-        while($row=$res->fetch_object()){
+        foreach ($res as $row){
             ?>
-            <option><?=$row->id_magazine;?></option>
+            <option><?=$row['id_magazine'];?></option>
             <?
         }
         ?>
@@ -53,45 +55,27 @@ if($_GET['task'] == 'add_product'){
     </form>
     <?
     if($_POST['add']) {
-        $new_name=mysqli_real_escape_string($connection,$_POST['new_product_name']);
+        $new_name = $_POST['new_product_name'];
         $new_cost = $_POST['new_product_cost'];
         $new_net_cost = $_POST['new_product_net_cost'];
         $new_quantity=$_POST['new_product_quantity'];
-        $new_type=mysqli_real_escape_string($connection,$_POST['new_product_type']);
+        $new_type=$_POST['new_product_type'];
         $new_dep=$_POST['new_product_dep_id'];
         $new_id_magazine=$_POST['new_product_magaizne_id'];
-
-        $sql = "INSERT INTO `product` 
-                ( 
-                `name_product`,
-                `cost`,
-                `net_cost`,
-                `quantity_product`,
-                `type`,`id_dep`,
-                `id_magazine`
-                ) 
-                VALUES (
-                    '$new_name',
-                    '$new_cost',
-                    '$new_net_cost',
-                    '$new_quantity',
-                    '$new_type',
-                    '$new_dep',
-                    '$new_id_magazine'
-                    )";
-        $add = mysqli_query($connection, $sql );
+        $product->add($new_name,$new_cost,$new_net_cost,$new_quantity,$new_type,$new_dep,$new_id_magazine);
         $_GET['task'] = 'product_list_2';
     }
 }
 if($_GET['task'] == 'del_product')
 {
     $del_per=$_GET['id_product'];
-    $query="DELETE FROM `product` WHERE `product`.`id_product` = '$del_per'";
-    $del=mysqli_query($connection, $query);
+    $product = new product();
+    $product->delete($del_per);
     $_GET['task'] = 'product_list';
 }
 if($_GET['task']=='edit'){
     $id_old=$_GET['id_product'];
+    $product = new product();
     if($_POST['upd']){
         $new_name=$_POST['old_product_name'];
         $new_cost = $_POST['old_product_cost'];
@@ -100,29 +84,17 @@ if($_GET['task']=='edit'){
         $new_type=$_POST['old_product_type'];
         $new_dep=$_POST['old_product_dep_id'];
         $new_id_magazine=$_POST['old_product_magaizne_id'];
-        $query="UPDATE `product` 
-                SET 
-                `name_product`='$new_name',
-                `cost` = '$new_cost',
-                 `net_cost` = '$new_net_cost',
-                 `quantity_product`='$new_quantity' , 
-                 `type`= '$new_type', 
-                 `id_dep`= '$new_dep', 
-                 `id_magazine`='$new_id_magazine'
-                WHERE `product`.`id_product` = '$id_old'";
-        $res=mysqli_query($connection,$query);
+        $product->update($id_old,$new_name,$new_cost,$new_net_cost,$new_quantity,$new_type,$new_dep,$new_id_magazine);
         $_GET['task'] = 'product_list_2';
     }
-    $query="SELECT * FROM product WHERE product.id_product ='$id_old'";
-    $res=mysqli_query($connection,$query);
-    $row=$res->fetch_object();
-    $old_name=$row->name_product;
-    $old_cost = $row->cost;
-    $old_net_cost = $row->net_cost;
-    $old_quantity=$row->quantity_product;
-    $old_type=$row->type;
-    $old_dep=$row->id_dep;
-    $old_id_magazine=$row->id_magazine;
+    $res = R::getAll( "SELECT * FROM product WHERE product.id_product ='$id_old'");
+    $old_name=$res[0]['name_product'];
+    $old_cost = $res[0]['cost'];
+    $old_net_cost = $res[0]['net_cost'];
+    $old_quantity=$res[0]['quantity_product'];
+    $old_type=$res[0]['type'];
+    $old_dep=$res[0]['id_dep'];
+    $old_id_magazine=$res[0]['id_magazine'];
     ?>
     <form method="post">
         <br>
@@ -144,18 +116,18 @@ if($_GET['task']=='edit'){
         <p>Номер отдела</p>
         <select name="old_product_dep_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_dep` FROM `department`" );
+        $res=R::getAll("SELECT `id_dep` FROM `department`" );
         ?>
         <?php
-        while($row=$res->fetch_object()){
-            if($row->id_dep == $old_dep ){
+        foreach($res as $row){
+            if($row['id_dep'] == $old_dep ){
                 ?>
-                <option selected><?=$row->id_dep;?></option>
+                <option selected><?=$row['id_dep'];?></option>
                 <?
             }
             else {
                 ?>
-                <option><?= $row->id_dep; ?></option>
+                <option><?= $row['id_dep']; ?></option>
                 <?
             }
         }
@@ -165,18 +137,18 @@ if($_GET['task']=='edit'){
         <p>Номер магазина</p>
         <select name="old_product_magaizne_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_magazine` FROM `magazine`" );
+        $res=R::getAll("SELECT `id_magazine` FROM `magazine`" );
         ?>
         <?php
-        while($row=$res->fetch_object()){
-            if($row->id_magazine == $old_id_magazine){
+        foreach($res as $row){
+            if($row['id_magazine'] == $old_id_magazine){
                 ?>
-                <option selected><?=$row->id_magazine;?></option>
+                <option selected><?=$row['id_magazine'];?></option>
                 <?
             }
             else {
                 ?>
-                <option><?= $row->id_magazine; ?></option>
+                <option><?= $row['id_magazine']; ?></option>
                 <?
             }
         }
@@ -197,10 +169,10 @@ if($_GET['task']=='sell_product'){
         <p>Номер продажи</p>
         <select name="id_sale" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_sale` FROM `sale` ORDER BY `id_sale`" );
+        $res=R::exec("SELECT `id_sale` FROM `sale` ORDER BY `id_sale`" );
         ?>
         <?php
-        while($row=$res->fetch_object()){
+        foreach($res as $row){
             ?>
             <option><?=$row->id_sale;?></option>
             <?
@@ -214,20 +186,17 @@ if($_GET['task']=='sell_product'){
     <?
     if($_POST['sell']){
         $id_old=$_GET['id_product'];
-        $query="SELECT `quantity_product` FROM `product` WHERE id_product ='$id_old'";
-        $res = mysqli_query($connection,$query);
-        $row= $res->fetch_object();
-        if($_POST['quantity'] < $row->quantity_product){
-            $new_quantity=$row->quantity_product-$_POST['quantity'];
-            $query="UPDATE `product` 
+        $res=R::exec("SELECT `quantity_product` FROM `product` WHERE id_product ='$id_old'");
+        if($_POST['quantity'] < $res[0]['quantity_product']){
+            $new_quantity=$res[0]['quantity_product']-$_POST['quantity'];
+            $res = R::exec( "UPDATE `product` 
                 SET 
                  `quantity_product`='$new_quantity'
-                WHERE `product`.`id_product` = '$id_old'";
-            $res=mysqli_query($connection,$query);
+                WHERE `product`.`id_product` = '$id_old'");
 
             $id_sale = $_POST['id_sale'];
             $quantity = $_POST['quantity'];
-            $sql = "INSERT INTO `sale_product` 
+            $res =R::exec( "INSERT INTO `sale_product` 
                 ( 
                 `id_sale`,
                 `id_product`,
@@ -237,8 +206,7 @@ if($_GET['task']=='sell_product'){
                     '$id_sale',
                     '$id_old',
                     $quantity                  
-                    )";
-            $res=mysqli_query($connection,$sql);
+                    )");
             echo "Товар продан в количестве ", $_POST['quantity'];
         }
         else{
@@ -248,7 +216,7 @@ if($_GET['task']=='sell_product'){
 }
 if($_GET['task'] == 'product_list_2')
 {
-    $res = mysqli_query($connection,'SELECT* FROM product');
+    $res = R::getAll(' SELECT * FROM `product` ');
     ?>
     <H3> Товары </H3>
     <table class="table table-bordered table-hover table-striped">
@@ -263,17 +231,17 @@ if($_GET['task'] == 'product_list_2')
             <th>Номер магазина</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?=$row->id_product;?></td>
-                <td><?=$row->name_product;?></td>
-                <td><?=$row->cost;?></td>
-                <td><?=$row->net_cost;?></td>
-                <td><?=$row->quantity_product;?></td>
-                <td><?=$row->type;?></td>
-                <td><?=$row->id_dep;?></td>
-                <td><?=$row->id_magazine;?></td>
+                <td><?=$row['id_product'];?></td>
+                <td><?=$row['name_product'];?></td>
+                <td><?=$row['cost'];?></td>
+                <td><?=$row['net_cost'];?></td>
+                <td><?=$row['quantity_product'];?></td>
+                <td><?=$row['type'];?></td>
+                <td><?=$row['id_dep'];?></td>
+                <td><?=$row['id_magazine'];?></td>
             </tr>
             <?
         }
