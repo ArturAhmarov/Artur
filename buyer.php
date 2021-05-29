@@ -65,14 +65,7 @@ if($_GET['task'] == 'add_buyer'){
         $id_dep = $_POST['id_dep'];
         $id_magazine = $_POST['id_magazine'];
 
-        $sql = "INSERT INTO `buyer` 
-                    ( 
-                    `date_visit`,
-                    `id_marketer`,
-                    `id_dep`,
-                    `id_magazine`
-                    ) 
-                    VALUES (
+        $sql = "CALL add_buyer (
                         '$date',
                         '$id_marketer',
                         '$id_dep',
@@ -84,40 +77,36 @@ if($_GET['task'] == 'add_buyer'){
 }
 if($_GET['task'] == 'edit_buyer'){
     $id_old=$_GET['id_buyer'];
-    if($_POST['upd']){
-        $buyer_date=$_POST['buyer_date'];
-        $id_market=$_POST['id_marketer'];
-        $id_dep=$_POST['id_dep'];
+    if($_POST['upd']) {
+        $buyer_date = $_POST['buyer_date'];
+        $id_market = $_POST['id_marketer'];
+        $id_dep = $_POST['id_dep'];
         $id_magazine = $_POST['id_magazine'];
-        $query="UPDATE `buyer` 
-                SET 
-                `date_visit` = '$buyer_date',
-                 `id_marketer` = '$id_market',
-                 `id_dep` = '$id_dep',
-                 `id_magazine` = '$id_magazine'
-                WHERE `buyer`.`id_buyer` = '$id_old'";
+        $query = "CALL upd_buyer(
+        '$id_old','$buyer_date','$id_market','$id_dep','$id_magazine')";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'buyer_list_2';
     }
-    $query="SELECT * FROM `buyer` WHERE `buyer`.`id_buyer` ='$id_old'";
+    $query="CALL get_buyer_id($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $old_date=$row->date_visit;
     $id_marketer=$row->id_marketer;
     $id_dep=$row->id_dep;
     $id_magazine=$row->id_magazine;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <br>
-        <p>Название магазина</p>
+        <p>Дата</p>
         <input type = "date" name="buyer_date" value="<? echo $old_date ?>" required>
         <br>
         <p>Номер продавца</p>
         <select name="id_marketer" required>
             <?
-            $query="SELECT `id_marketer` FROM `marketer`";
+            $query='CALL get_marketer()';
             $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
+            while($row=mysqli_fetch_object($res)){
                 if($row->id_marketer == $id_marketer){
                     ?>
                     <option selected><?= $row->id_marketer ?></option>
@@ -129,15 +118,16 @@ if($_GET['task'] == 'edit_buyer'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
         <p>Номер отдела</p>
         <select name="id_dep" required>
             <?
-            $query="SELECT `id_dep` FROM `department`";
+            $query="CALL get_dep()";
             $res=mysqli_query($connection,$query);
-            while($row=$res->fetch_object()){
+            while($row=mysqli_fetch_object($res)){
                 if($row->id_dep == $id_dep){
                     ?>
                     <option selected><?= $row->id_dep ?></option>
@@ -149,13 +139,14 @@ if($_GET['task'] == 'edit_buyer'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
         <p>Номер магазина</p>
         <select name="id_magazine" required>
             <?
-            $query="SELECT `id_magazine` FROM `magazine`";
+            $query="CALL get_magazine();";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 if($row->id_magazine == $id_magazine){
@@ -169,6 +160,7 @@ if($_GET['task'] == 'edit_buyer'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p></p>
@@ -178,12 +170,12 @@ if($_GET['task'] == 'edit_buyer'){
 }
 if($_GET['task'] == 'del_buyer' ){
     $del_per=$_GET['id_buyer'];
-    $query="DELETE FROM `buyer` WHERE `buyer`.`id_buyer` = '$del_per'";
+    $query="CALL delete_buyer($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'buyer_list';
 }
 if($_GET['task'] == 'buyer_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM buyer');
+    $res = mysqli_query($connection,'CALL get_buyer()');
     ?>
     <H3> Покупатели </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
@@ -207,6 +199,7 @@ if($_GET['task'] == 'buyer_list_2'){
         </tr>
         <?
     }
+    mysqli_next_result($connection);
     ?>
     </table>
     <?php

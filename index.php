@@ -169,9 +169,7 @@ function link_bar($page, $pages_count)
     return true;
 } // Конец функции
 if($_GET['task'] == 'ship_product'){
-    $res = mysqli_query($connection,'SELECT * FROM product_ship
-                                                INNER JOIN product ON product.id_product = product_ship.id_product
-                                                INNER JOIN shipper ON product_ship.id_shipper = shipper.id_shipper');
+    $res = mysqli_query($connection,'CALL get_product_ship()');
     ?>
     <H3> Товары - поставщикии </H3>
     <a href="?task=add_ship_product" class="c">Добавить</a>
@@ -257,7 +255,7 @@ if($_GET['task'] == 'product_list')
 <?php
 }
 if($_GET['task'] == 'marketer_list'){
-    $res = mysqli_query($connection,'SELECT* FROM marketer');
+    $res = mysqli_query($connection,'CALL get_marketer();');
     ?>
     <H3> Продавцы </H3>
     <a href="?task=add_marketer" class="c">Добавить продавца</a>
@@ -293,7 +291,7 @@ if($_GET['task'] == 'marketer_list'){
     <?php
 }
 if($_GET['task'] == 'buyer_list'){
-    $res = mysqli_query($connection,'SELECT* FROM buyer');
+    $res = mysqli_query($connection,'CALL get_buyer();');
     ?>
     <H3> Покупатели </H3>
     <a href="?task=add_buyer" class="c">Добавить покупателя</a>
@@ -326,7 +324,7 @@ if($_GET['task'] == 'buyer_list'){
     <?php
 }
 if($_GET['task'] == 'owner_list'){
-    $res = mysqli_query($connection,'SELECT* FROM owner');
+    $res = mysqli_query($connection,'CALL get_owner();');
     ?>
     <H3> Владельцы </H3>
     <a href="?task=add_owner" class="c">Добавить владельца</a>
@@ -356,7 +354,7 @@ if($_GET['task'] == 'owner_list'){
     <?php
 }
 if($_GET['task'] == 'shipper_list'){
-    $res = mysqli_query($connection,'SELECT* FROM shipper');
+    $res = mysqli_query($connection,'CALL get_shipper()');
     ?>
     <H3> Поставщики </H3>
     <a href="?task=add_shipper" class="c">Добавить поставщика</a>
@@ -386,7 +384,7 @@ if($_GET['task'] == 'shipper_list'){
     <?php
 }
 if($_GET['task'] == 'sales_list'){
-    $res = mysqli_query($connection,'SELECT* FROM sale');
+    $res = mysqli_query($connection,'CALL get_sale();');
     ?>
     <H3> Продажи </H3>
     <a href="?task=add_sale" class="c">Добавить продажу</a>
@@ -417,7 +415,7 @@ if($_GET['task'] == 'sales_list'){
     <?php
 }
 if($_GET['task'] == 'dep_list'){
-    $res = mysqli_query($connection,'SELECT* FROM department');
+    $res = mysqli_query($connection,'CALL get_dep();');
     ?>
     <H3> Отделы </H3>
     <a href="?task=add_dep" class="c">Добавить отдел</a>
@@ -449,7 +447,7 @@ if($_GET['task'] == 'dep_list'){
     <?php
 }
 if($_GET['task'] == 'magazine_list'){
-    $res = mysqli_query($connection,'SELECT* FROM magazine');
+    $res = mysqli_query($connection,'CALL get_magazine()');
     ?>
     <H3> Магазины </H3>
     <a href="?task=add_magazine" class="c">Добавить магазин</a>
@@ -481,7 +479,7 @@ if($_GET['task'] == 'magazine_list'){
     <?php
 }
 if($_GET['task'] == 'sh_list'){
-    $res = mysqli_query($connection,'SELECT* FROM storehouse');
+    $res = mysqli_query($connection,'CALL get_storehouse();');
     ?>
     <H3> Склад </H3>
     <a href="?task=add_order" class="c">Добавить заказ</a>
@@ -560,7 +558,7 @@ if($_GET['task'] == 'request_1'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT p.id_shipper,s.name_shipper FROM storehouse as p LEFT JOIN `shipper` s ON p.id_shipper = s.id_shipper WHERE p.id_product = '$buf'");
+        $res = mysqli_query($connection, "CALL  get_shipper_id($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -588,7 +586,7 @@ if($_GET['task'] == 'request_2'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id_product WHERE b.id_sale ='$buf'");
+        $res = mysqli_query($connection, "CALL get_product_from_sale($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -620,9 +618,7 @@ if($_GET['task'] == 'request_3'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf = $_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT COUNT(*) as `count`, name_product
-                                                FROM `sale_product` AS s LEFT JOIN product p ON s.id_product = p.id_product 
-                                                WHERE s.id_product = '$buf'");
+        $res = mysqli_query($connection, "CALL get_count_sale($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -651,7 +647,7 @@ if($_GET['task'] == 'request_4'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT * FROM `buyer` WHERE date_visit = '$buf'");
+        $res = mysqli_query($connection, "CALL get_count_buyer($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
         <tr>
@@ -685,7 +681,7 @@ if($_GET['task'] == 'request_5'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT p.id_sale,s.id_buyer FROM sale_product as p LEFT JOIN `sale` s ON p.id_sale = s.id_sale WHERE p.id_product = '$buf'");
+        $res = mysqli_query($connection, "CALL get_buyer_from_product($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -713,7 +709,7 @@ if($_GET['task'] == 'request_6') {
     <?php
     if ($_POST['submit'] && $_POST['text_request'] != " ") {
         $buf = $_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT id_product,name_product,cost,quantity_product FROM product WHERE id_product = '$buf'");
+        $res = mysqli_query($connection, "CALL get_product_cost_count($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -745,7 +741,7 @@ if($_GET['task'] == 'request_7') {
     <?php
     if ($_POST['submit'] && $_POST['text_request'] != " ") {
         $buf = mysqli_real_escape_string($connection,$_POST['text_request']);
-        $res = mysqli_query($connection, "SELECT * FROM product WHERE type = '$buf'");
+        $res = mysqli_query($connection, "CALL get_type_product('$buf');");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -787,9 +783,7 @@ if($_GET['task'] == 'request_8'){
     <?php
     if($_POST['submit']) {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT p.id_marketer,p.name_marketer,s.floor_dep 
-                                                FROM marketer as p LEFT JOIN department s ON p.id_dep = s.id_dep 
-                                                WHERE s.floor_dep = '$buf'");
+        $res = mysqli_query($connection, "CALL get_marketer_from_floor($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
@@ -819,9 +813,7 @@ if($_GET['task'] == 'request_9'){
     <?php
     if($_POST['submit']&& $_POST['text_request'] != " ") {
         $buf=$_POST['text_request'];
-        $res = mysqli_query($connection, "SELECT s.id_product,s.name_product,p.quantity_in_sh,p.order_status
-                                                FROM storehouse as p LEFT JOIN product s ON p.id_product = s.id_product 
-                                                WHERE p.id_order = '$buf'");
+        $res = mysqli_query($connection, "CALL get_order($buf);");
         ?>
         <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
         <tr>
