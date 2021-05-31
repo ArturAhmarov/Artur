@@ -17,12 +17,7 @@ if($_GET['task'] == 'add_shipper'){
     if($_POST['add']){
         $new_fio_shipper = $_POST['fio_shipper'];
         $new_telephone_shipper = $_POST['telephone_shipper'];
-        $query="INSERT INTO `shipper`
-                (
-                `name_shipper`,
-                `telephone_shipper`
-                )
-                VALUES
+        $query="CALL add_shipper
                 (
                 '$new_fio_shipper',
                 '$new_telephone_shipper'
@@ -36,19 +31,16 @@ if($_GET['task'] == 'edit_shipper'){
     if($_POST['upd']){
         $new_name=$_POST['old_shipper_name'];
         $new_telephone=$_POST['old_telephone_shipper'];
-        $query="UPDATE `shipper` 
-                SET 
-                `name_shipper`='$new_name',
-                 `telephone_shipper`='$new_telephone'
-                WHERE `shipper`.`id_shipper` = '$id_old'";
+        $query="CALL upd_shipper($id_old,'$new_name','$new_telephone')";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'shipper_list_2';
     }
-    $query="SELECT * FROM `shipper` WHERE `shipper`.`id_shipper` ='$id_old'";
+    $query="CALL get_shipper_id_upd($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $old_name=$row->name_shipper;
     $old_telephone=$row->telephone_shipper;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <br>
@@ -65,12 +57,12 @@ if($_GET['task'] == 'edit_shipper'){
 if($_GET['task'] == 'del_shipper')
 {
     $del_per=$_GET['id_shipper'];
-    $query="DELETE FROM `shipper` WHERE `shipper`.`id_shipper` = '$del_per'";
+    $query="CALL del_shipper($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'shipper_list';
 }
 if($_GET['task'] == 'shipper_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM shipper');
+    $res = mysqli_query($connection,'CALL get_shipper()');
     ?>
     <H3> Поставщики </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 600px;" ">

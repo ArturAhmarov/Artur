@@ -8,13 +8,14 @@ if($_GET['task'] == 'add_order'){
         <p>Номер товара</p>
         <select name="id_product" required>
             <?
-            $query="SELECT `id_product` FROM `product`";
+            $query="CALL get_product()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 ?>
                 <option><?= $row->id_product ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
@@ -24,13 +25,14 @@ if($_GET['task'] == 'add_order'){
         <p>Номер поставщика</p>
         <select name="id_shipper" required>
             <?
-            $query="SELECT `id_shipper` FROM `shipper`";
+            $query="CALL get_shipper()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 ?>
                 <option><?= $row->id_shipper ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
@@ -48,14 +50,7 @@ if($_GET['task'] == 'add_order'){
         $quantity = $_POST['quantity_sh'];
         $id_shipper=$_POST['id_shipper'];
         $order_status=$_POST['order_status'];
-        $query="INSERT INTO `storehouse`
-                (
-                `id_product`,
-                `quantity_in_sh`,
-                `id_shipper`,
-                `order_status`
-                )
-                VALUES
+        $query="CALL add_sh
                 (
                 '$id_product',
                 '$quantity',
@@ -73,30 +68,25 @@ if($_GET['task'] == 'edit_sh'){
         $quantity = $_POST['quantity_sh'];
         $id_shipper = $_POST['id_shipper'];
         $order_status= $_POST['order_status'];
-        $query="UPDATE `storehouse` 
-                SET 
-                `id_product` = '$id_product',
-                 `quantity_in_sh` = '$quantity',
-                 `id_shipper` = '$id_shipper',
-                 `order_status` = '$order_status'
-                WHERE `storehouse`.`id_order` = '$id_old'";
+        $query="CALL upd_sh($id_old,$id_product,$quantity,$id_shipper,'$order_status')";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'sh_list_2';
     }
-    $query="SELECT * FROM `storehouse` WHERE `storehouse`.`id_order` ='$id_old'";
+    $query="CALL get_sh_id($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $id_product=$row->id_product;
     $quantity_in_sh=$row->quantity_in_sh;
     $id_shipper=$row->id_shipper;
     $order_status = $row->order_status;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <br>
         <p>Номер товара</p>
         <select name="id_product" required>
             <?
-            $query="SELECT `id_product` FROM `product`";
+            $query="CALL get_product()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 if($row->id_product == $id_product){
@@ -110,6 +100,7 @@ if($_GET['task'] == 'edit_sh'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
@@ -119,7 +110,7 @@ if($_GET['task'] == 'edit_sh'){
         <p>Номер поставщика</p>
         <select name="id_shipper" required>
             <?
-            $query="SELECT `id_shipper` FROM `shipper`";
+            $query="CALL get_shipper()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 if($row->id_shipper == $id_shipper){
@@ -133,6 +124,7 @@ if($_GET['task'] == 'edit_sh'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
@@ -159,7 +151,7 @@ if($_GET['task'] == 'edit_sh'){
 }
 if($_GET['task'] == 'del_sh' ){
     $del_per=$_GET['id_order'];
-    $query="DELETE FROM `storehouse` WHERE `storehouse`.`id_order` = '$del_per'";
+    $query="CALL del_sh($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'sh_list';
 }
@@ -176,17 +168,14 @@ if($_GET['task']=='carry_product'){
     <?
     if($_POST['carry']){
         $id_old=$_GET['id_order'];
-        $query="SELECT `quantity_in_sh`,`id_product`,`order_status`FROM `storehouse` WHERE `id_order` ='$id_old'";
+        $query="CALL carry_product($id_old)";
         $res = mysqli_query($connection,$query);
         $row= $res->fetch_object();
         $id_tovara = $row->id_product;
         if($row->order_status == 'Есть на складе') {
             if ($_POST['quantity'] < $row->quantity_in_sh) {
                 $new_quantity = $row->quantity_in_sh - $_POST['quantity'];
-                $query = "UPDATE `storehouse` 
-                SET 
-                 `quantity_in_sh`='$new_quantity'
-                WHERE `storehouse`.`id_order` = '$id_old'";
+                $query = "CALL upd_quantity_sh($id_old,'$new_quantity')";
                 $res = mysqli_query($connection, $query);
 
                 echo "Товар перемещен в магазин в количестве ", $_POST['quantity'];
@@ -199,7 +188,7 @@ if($_GET['task']=='carry_product'){
     }
 }
 if($_GET['task'] == 'sh_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM storehouse');
+    $res = mysqli_query($connection,'CALL get_storehouse()');
     ?>
     <H3> Склад </H3>
     <table class="table table-bordered table-hover table-striped">

@@ -14,13 +14,14 @@ if($_GET['task'] == 'add_magazine'){
         <p>Номер хозяйна</p>
         <select name="id_owner" required>
             <?
-            $query="SELECT `id_owner` FROM `owner`";
+            $query="CALL get_owner()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 ?>
                 <option><?= $row->id_owner ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p></p>
@@ -31,18 +32,7 @@ if($_GET['task'] == 'add_magazine'){
         $new_name_mag = $_POST['name_magazine'];
         $type = $_POST['type'];
         $id_owner=$_POST['id_owner'];
-        $query="INSERT INTO `magazine`
-                (
-                `name_magazine`,
-                `magazine_type`,
-                `id_owner`
-                )
-                VALUES
-                (
-                '$new_name_mag',
-                '$type',
-                '$id_owner'
-                )";
+        $query="CALL add_magazine ('$new_name_mag','$type',$id_owner)";
         $res=mysqli_query($connection,$query);
         $_GET['task'] ='magazine_list_2';
     }
@@ -53,21 +43,17 @@ if($_GET['task'] == 'edit_magazine'){
         $new_name=$_POST['magazine_name'];
         $new_magazine_type=$_POST['type_magazine'];
         $new_id_owner=$_POST['id_owner'];
-        $query="UPDATE `magazine` 
-                SET 
-                `name_magazine` = '$new_name',
-                 `magazine_type` = '$new_magazine_type',
-                 `id_owner` = $new_id_owner
-                WHERE `magazine`.`id_magazine` = '$id_old'";
+        $query="CALL upd_magazine($id_old,'$new_name','$new_magazine_type',$new_id_owner)";
         $res=mysqli_query($connection,$query);
         $_GET['task'] ='magazine_list_2';
     }
-    $query="SELECT * FROM `magazine` WHERE `magazine`.`id_magazine` ='$id_old'";
+    $query="CALL get_magazine_id($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $old_name=$row->name_magazine;
     $old_magazine_type=$row->magazine_type;
     $old_id_owner=$row->id_owner;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <br>
@@ -80,7 +66,7 @@ if($_GET['task'] == 'edit_magazine'){
         <p>Номер хозяйна</p>
         <select name="id_owner" required>
             <?
-            $query="SELECT `id_owner` FROM `owner`";
+            $query="CALL get_owner()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 if($row->id_owner == $old_id_owner){
@@ -94,6 +80,7 @@ if($_GET['task'] == 'edit_magazine'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p></p>
@@ -103,12 +90,12 @@ if($_GET['task'] == 'edit_magazine'){
 }
 if($_GET['task'] == 'del_magazine' ){
     $del_per=$_GET['id_magazine'];
-    $query="DELETE FROM `magazine` WHERE `magazine`.`id_magazine` = '$del_per'";
+    $query="CALL del_magazine ($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'magazine_list';
 }
 if($_GET['task'] == 'magazine_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM magazine');
+    $res = mysqli_query($connection,'CALL get_magazine()');
     ?>
     <H3> Магазины </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">

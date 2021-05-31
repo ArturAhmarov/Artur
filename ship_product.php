@@ -8,7 +8,7 @@
               <p>Товар</p>
               <select name="id_product">
                 <?php
-                $res = mysqli_query($connection,'SELECT id_product,name_product FROM product');
+                $res = mysqli_query($connection,'CALL get_product()');
                 ?>
                 <?php
                 while($row=$res->fetch_object()){
@@ -16,13 +16,14 @@
                     <option value="<?=$row->id_product;?>"><?=$row->name_product;?></option>
                     <?
                 }
+                mysqli_next_result($connection);
                 ?>
               </select>
               <br>
               <p>Поставщик</p>
               <select name="id_shipper">
                   <?php
-                  $res = mysqli_query($connection,'SELECT id_shipper,name_shipper FROM shipper');
+                  $res = mysqli_query($connection,'CALL get_shipper()');
                   ?>
                   <?php
                   while($row=$res->fetch_object()){
@@ -30,6 +31,7 @@
                       <option value="<?=$row->id_shipper;?>"><?=$row->name_shipper;?></option>
                       <?
                   }
+                  mysqli_next_result($connection);
                   ?>
               </select>
               <br>
@@ -41,12 +43,7 @@
             $id_product = mysqli_real_escape_string($connection, $_POST['id_product']);
             $id_shipper = mysqli_real_escape_string($connection, $_POST['id_shipper']);
 
-            $sql = "INSERT INTO `product_ship` 
-                    ( 
-                    `id_product`,
-                    `id_shipper`
-                    ) 
-                    VALUES (
+            $sql = "CALL add_product_ship (
                         '$id_product',
                         '$id_shipper'
                         )";
@@ -57,7 +54,7 @@
     if($_GET['task'] == 'del_ship_product')
     {
         $del_per=$_GET['id_ship_product'];
-        $query="DELETE FROM `product_ship` WHERE `product_ship`.`id` = '$del_per'";
+        $query="CALL del_product_ship($del_per)";
         $del=mysqli_query($connection, $query);
         $_GET['task'] = 'ship_product';
     }
@@ -66,26 +63,23 @@
         if($_POST['upd']){
             $id_product=$_POST['id_product'];
             $id_shipper=$_POST['id_shipper'];
-            $query="UPDATE `product_ship` 
-                SET 
-                `id_product`='$id_product',
-                 `id_shipper`='$id_shipper' 
-                WHERE `product_ship`.`id` = '$id_old'";
+            $query="CALL upd_product_ship($id_old,$id_product,$id_shipper)";
             $res=mysqli_query($connection,$query);
             $_GET['task'] = 'ship_product';
         }
-        $query="SELECT * FROM `product_ship` WHERE `product_ship`.`id` ='$id_old'";
+        $query="CALL get_product_ship_id($id_old)";
         $res=mysqli_query($connection,$query);
         $row=$res->fetch_object();
         $id_product=$row->id_product;
         $id_shipper=$row->id_shipper;
+        mysqli_next_result($connection);
         ?>
         <form method="post">
             <br>
             <p>Товар</p>
             <select name="id_product">
                 <?php
-                $res = mysqli_query($connection,'SELECT id_product,name_product FROM product');
+                $res = mysqli_query($connection,'CALL get_product()');
                 ?>
                 <?php
                 while($row=$res->fetch_object()){
@@ -100,13 +94,14 @@
                         <?
                     }
                 }
+                mysqli_next_result($connection);
                 ?>
             </select>
             <br>
             <p>Поставщик</p>
             <select name="id_shipper">
                 <?php
-                $res = mysqli_query($connection,'SELECT id_shipper,name_shipper FROM shipper');
+                $res = mysqli_query($connection,'CALL get_shipper()');
                 ?>
                 <?php
                 while($row=$res->fetch_object()){
@@ -121,6 +116,7 @@
                         <?
                     }
                 }
+                mysqli_next_result($connection);
                 ?>
             </select>
             <br>

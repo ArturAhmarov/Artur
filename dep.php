@@ -14,13 +14,14 @@ if($_GET['task'] == 'add_dep'){
         <p>Номер магазина</p>
         <select name="id_magazine" required>
             <?
-            $query="SELECT `id_magazine` FROM `magazine`";
+            $query="CALL get_magazine()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 ?>
                 <option><?= $row->id_magazine ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p></p>
@@ -31,18 +32,7 @@ if($_GET['task'] == 'add_dep'){
         $new_name_dep = $_POST['name_dep'];
         $floor = $_POST['floor'];
         $id_magazine=$_POST['id_magazine'];
-        $query="INSERT INTO `department`
-                (
-                `name_dep`,
-                `floor_dep`,
-                `id_magazine`
-                )
-                VALUES
-                (
-                '$new_name_dep',
-                '$floor',
-                '$id_magazine'
-                )";
+        $query="CALL add_dep('$new_name_dep',$floor,$id_magazine)";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'dep_list_2';
     }
@@ -53,21 +43,17 @@ if($_GET['task'] == 'edit_dep'){
         $new_name=$_POST['old_dep_name'];
         $new_floor=$_POST['old_floor_dep'];
         $new_id_magazine=$_POST['id_magazine'];
-        $query="UPDATE `department` 
-                SET 
-                `name_dep` = '$new_name',
-                 `floor_dep` = '$new_floor',
-                 `id_magazine` = $new_id_magazine
-                WHERE `department`.`id_dep` = '$id_old'";
+        $query="CALL upd_dep($id_old,'$new_name',$new_floor,$new_id_magazine)";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'dep_list_2';
     }
-    $query="SELECT * FROM `department` WHERE `department`.`id_dep` ='$id_old'";
+    $query="CALL get_dep_id($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $old_name=$row->name_dep;
     $old_floor=$row->floor_dep;
     $old_id_magazine=$row->id_magazine;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <br>
@@ -80,7 +66,7 @@ if($_GET['task'] == 'edit_dep'){
         <p>Номер магазина</p>
         <select name="id_magazine" required>
             <?
-            $query="SELECT `id_magazine` FROM `magazine`";
+            $query="CALL get_magazine()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 if($row->id_magazine == $old_id_magazine){
@@ -94,6 +80,7 @@ if($_GET['task'] == 'edit_dep'){
                 <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p></p>
@@ -104,12 +91,12 @@ if($_GET['task'] == 'edit_dep'){
 if($_GET['task'] == 'del_dep')
 {
     $del_per=$_GET['id_dep'];
-    $query="DELETE FROM `department` WHERE `department`.`id_dep` = '$del_per'";
+    $query="CALL del_dep($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'dep_list';
 }
 if($_GET['task'] == 'dep_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM department');
+    $res = mysqli_query($connection,'CALL get_dep()');
     ?>
     <H3> Отделы </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">

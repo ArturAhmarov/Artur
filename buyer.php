@@ -11,49 +11,53 @@ if($_GET['task'] == 'add_buyer'){
         <p>Номер продавца</p>
         <select name="id_marketer">
             <?
-            $query = "SELECT `id_marketer` FROM `marketer`";
+            $query = "CALL get_marketer()";
             $res = mysqli_query($connection,$query);
             while($row = $res->fetch_object()) {
                 ?>
                 <option><? echo $row->id_marketer ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
         <p>Номер отдела</p>
         <select name="id_dep">
             <?
-            $query = "SELECT `id_dep` FROM `department`";
+            $query = "CALL get_dep()";
             $res = mysqli_query($connection,$query);
             while($row = $res->fetch_object()) {
                 ?>
                 <option><? echo $row->id_dep ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
         <p>Номер магазина</p>
         <select name="id_magazine">
             <?
-            $query = "SELECT `id_magazine` FROM `magazine`";
+            $query = "CALL get_magazine()";
             $res = mysqli_query($connection,$query);
             while($row = $res->fetch_object()) {
                 ?>
                 <option><? echo $row->id_magazine ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p> </p>
         <?
-        $query = "SELECT `id_sale` FROM `sale`";
+        $query = "CALL get_sale()";
         $res = mysqli_query($connection,$query);
         while($row = $res->fetch_object()) {
             $per=$row->id_sale;
         }
         $value=$per+2;
+        mysqli_next_result($connection);
         ?>
         <p> </p>
         <input type="submit" name="add" value="Добавить">
@@ -172,7 +176,7 @@ if($_GET['task'] == 'del_buyer' ){
     $del_per=$_GET['id_buyer'];
     $query="CALL delete_buyer($del_per)";
     $del=mysqli_query($connection, $query);
-    $_GET['task'] = 'buyer_list';
+    $_GET['task'] = 'buyer_list_2';
 }
 if($_GET['task'] == 'buyer_list_2'){
     $res = mysqli_query($connection,'CALL get_buyer()');

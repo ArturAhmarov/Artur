@@ -17,16 +17,7 @@ if($_GET['task'] == 'add_owner'){
     if($_POST['add']){
         $new_fio_owner = $_POST['fio_owner'];
         $new_telephone_owner = $_POST['telephone_owner'];
-        $query="INSERT INTO `owner`
-                (
-                `name_owner`,
-                `telephone_owner`
-                )
-                VALUES
-                (
-                '$new_fio_owner',
-                '$new_telephone_owner'
-                )";
+        $query="CALL add_owner ('$new_fio_owner','$new_telephone_owner')";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'owner_list_2';
     }
@@ -36,19 +27,16 @@ if($_GET['task'] == 'edit_owner'){
     if($_POST['upd']){
         $new_name=$_POST['old_owner_name'];
         $new_telephone=$_POST['old_telephone_owner'];
-        $query="UPDATE `owner` 
-                SET 
-                `name_owner`='$new_name',
-                 `telephone_owner`='$new_telephone'
-                WHERE `owner`.`id_owner` = '$id_old'";
+        $query="CALL upd_owner($id_old,'$new_name','$new_telephone')";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'owner_list_2';
     }
-    $query="SELECT * FROM `owner` WHERE `owner`.`id_owner` ='$id_old'";
+    $query="CALL get_owner_id($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $old_name=$row->name_owner;
     $old_telephone=$row->telephone_owner;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <br>
@@ -65,12 +53,12 @@ if($_GET['task'] == 'edit_owner'){
 if($_GET['task'] == 'del_owner')
 {
     $del_per=$_GET['id_owner'];
-    $query="DELETE FROM `owner` WHERE `owner`.`id_owner` = '$del_per'";
+    $query="CALL del_owner($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'owner_list';
 }
 if($_GET['task'] == 'owner_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM owner');
+    $res = mysqli_query($connection,'CALL get_owner()');
     ?>
     <H3> Владельцы </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 600px;" ">

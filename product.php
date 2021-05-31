@@ -23,7 +23,7 @@ if($_GET['task'] == 'add_product'){
         <p>Номер отдела</p>
         <select name="new_product_dep_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_dep` FROM `department`" );
+        $res=mysqli_query($connection,"CALL get_dep()" );
         ?>
         <?php
         while($row=$res->fetch_object()){
@@ -31,13 +31,14 @@ if($_GET['task'] == 'add_product'){
             <option><?=$row->id_dep;?></option>
             <?
         }
+        mysqli_next_result($connection);
         ?>
         </select>
         <br>
         <p>Номер магазина</p>
         <select name="new_product_magaizne_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_magazine` FROM `magazine`" );
+        $res=mysqli_query($connection,"CALL get_magazine()" );
         ?>
         <?php
         while($row=$res->fetch_object()){
@@ -45,6 +46,7 @@ if($_GET['task'] == 'add_product'){
             <option><?=$row->id_magazine;?></option>
             <?
         }
+        mysqli_next_result($connection);
         ?>
         </select>
         <br>
@@ -61,16 +63,7 @@ if($_GET['task'] == 'add_product'){
         $new_dep=$_POST['new_product_dep_id'];
         $new_id_magazine=$_POST['new_product_magaizne_id'];
 
-        $sql = "INSERT INTO `product` 
-                ( 
-                `name_product`,
-                `cost`,
-                `net_cost`,
-                `quantity_product`,
-                `type`,`id_dep`,
-                `id_magazine`
-                ) 
-                VALUES (
+        $sql = "CALL add_product  (
                     '$new_name',
                     '$new_cost',
                     '$new_net_cost',
@@ -86,7 +79,7 @@ if($_GET['task'] == 'add_product'){
 if($_GET['task'] == 'del_product')
 {
     $del_per=$_GET['id_product'];
-    $query="DELETE FROM `product` WHERE `product`.`id_product` = '$del_per'";
+    $query="CALL del_product ($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'product_list';
 }
@@ -100,20 +93,11 @@ if($_GET['task']=='edit'){
         $new_type=$_POST['old_product_type'];
         $new_dep=$_POST['old_product_dep_id'];
         $new_id_magazine=$_POST['old_product_magaizne_id'];
-        $query="UPDATE `product` 
-                SET 
-                `name_product`='$new_name',
-                `cost` = '$new_cost',
-                 `net_cost` = '$new_net_cost',
-                 `quantity_product`='$new_quantity' , 
-                 `type`= '$new_type', 
-                 `id_dep`= '$new_dep', 
-                 `id_magazine`='$new_id_magazine'
-                WHERE `product`.`id_product` = '$id_old'";
+        $query="CALL upd_product ($id_old,'$new_name',$new_cost,$new_net_cost,$new_quantity,'$new_type',$new_dep,$new_id_magazine)";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'product_list_2';
     }
-    $query="SELECT * FROM product WHERE product.id_product ='$id_old'";
+    $query="CALL get_product_id($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $old_name=$row->name_product;
@@ -123,6 +107,7 @@ if($_GET['task']=='edit'){
     $old_type=$row->type;
     $old_dep=$row->id_dep;
     $old_id_magazine=$row->id_magazine;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <br>
@@ -144,7 +129,7 @@ if($_GET['task']=='edit'){
         <p>Номер отдела</p>
         <select name="old_product_dep_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_dep` FROM `department`" );
+        $res=mysqli_query($connection,"CALL get_dep()" );
         ?>
         <?php
         while($row=$res->fetch_object()){
@@ -159,13 +144,14 @@ if($_GET['task']=='edit'){
                 <?
             }
         }
+        mysqli_next_result($connection);
         ?>
         </select>
         <br>
         <p>Номер магазина</p>
         <select name="old_product_magaizne_id" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_magazine` FROM `magazine`" );
+        $res=mysqli_query($connection,"CALL get_magazine()" );
         ?>
         <?php
         while($row=$res->fetch_object()){
@@ -180,6 +166,7 @@ if($_GET['task']=='edit'){
                 <?
             }
         }
+        mysqli_next_result($connection);
         ?>
         </select>
         <br>
@@ -197,7 +184,7 @@ if($_GET['task']=='sell_product'){
         <p>Номер продажи</p>
         <select name="id_sale" ">
         <?php
-        $res=mysqli_query($connection,"SELECT `id_sale` FROM `sale` ORDER BY `id_sale`" );
+        $res=mysqli_query($connection,"CALL get_sale()" );
         ?>
         <?php
         while($row=$res->fetch_object()){
@@ -205,6 +192,7 @@ if($_GET['task']=='sell_product'){
             <option><?=$row->id_sale;?></option>
             <?
         }
+        mysqli_next_result($connection);
         ?>
         </select>
         <br>
@@ -214,31 +202,19 @@ if($_GET['task']=='sell_product'){
     <?
     if($_POST['sell']){
         $id_old=$_GET['id_product'];
-        $query="SELECT `quantity_product` FROM `product` WHERE id_product ='$id_old'";
+        $query="CALL get_product_id($id_old)";
         $res = mysqli_query($connection,$query);
         $row= $res->fetch_object();
         if($_POST['quantity'] < $row->quantity_product){
             $new_quantity=$row->quantity_product-$_POST['quantity'];
-            $query="UPDATE `product` 
-                SET 
-                 `quantity_product`='$new_quantity'
-                WHERE `product`.`id_product` = '$id_old'";
+            $query="CALL upd_quantity($id_old,$new_quantity)";
             $res=mysqli_query($connection,$query);
 
             $id_sale = $_POST['id_sale'];
             $quantity = $_POST['quantity'];
-            $sql = "INSERT INTO `sale_product` 
-                ( 
-                `id_sale`,
-                `id_product`,
-                `quantity_sale`
-                ) 
-                VALUES (
-                    '$id_sale',
-                    '$id_old',
-                    $quantity                  
-                    )";
+            $sql = "CALL add_sale_product($id_sale,$id_old,$quantity)";
             $res=mysqli_query($connection,$sql);
+            mysqli_next_result($connection);
             echo "Товар продан в количестве ", $_POST['quantity'];
         }
         else{
@@ -248,7 +224,7 @@ if($_GET['task']=='sell_product'){
 }
 if($_GET['task'] == 'product_list_2')
 {
-    $res = mysqli_query($connection,'SELECT* FROM product');
+    $res = mysqli_query($connection,'CALL get_product()');
     ?>
     <H3> Товары </H3>
     <table class="table table-bordered table-hover table-striped">

@@ -38,7 +38,6 @@ include 'magazine.php';
 include 'buyer.php';
 include 'sale.php';
 include 'sh.php';
-include 'query_designer.php';
 
 // Получаем список файлов для миграций
 function getMigrationFiles($connection) {
@@ -73,7 +72,7 @@ function getMigrationFiles($connection) {
     if ($firstMigration) {
         foreach($allFiles as $file){
             $hashname = hash_file('md5', $file);
-            $query = sprintf('insert into `%s` (`name`) values("%s")', DB_TABLE_HASH, $hashname);
+            $query = sprintf('insert into `%s` (`name_hash`) values("%s")', DB_TABLE_HASH, $hashname);
             // Выполняем запрос
             $connection->query($query);
         }
@@ -86,15 +85,25 @@ function getMigrationFiles($connection) {
     }
     $arr_hash = explode(" ", $arr_hash);
 
-    // Выбираем из таблицы versions все названия файлов
-    $query = sprintf('select `name` from `%s`', DB_TABLE_HASH);
+    // Выбираем из таблицы hash все хэши
+    $query = sprintf('select `name_hash`,`name` from `%s`', DB_TABLE_HASH);
     $data = $connection->query($query)->fetch_all(MYSQLI_ASSOC);
     $i = 1;
     foreach ($data as $row) {
-        if($row['name'] != $arr_hash[$i]){
-            echo 'Ошибка в данных файла';
-            print( $arr_hash[$i]);
-            exit();
+        if($row['name_hash'] != $arr_hash[$i] ){
+            if($row['name'] != '0005_procedure.sql') {
+                echo 'Ошибка в данных файла';
+                print($row['name']);
+                exit();
+            }else{
+                $query = sprintf("DELETE from `%s` WHERE `name` = '0005_procedure.sql'" , DB_TABLE_VERSIONS);
+                if($connection->query($query)){
+                    $query = sprintf("DELETE from `%s` WHERE `name` = '0005_procedure.sql'" , DB_TABLE_HASH);
+                    if($connection->query($query)){
+                        echo "Процедуры изменились!";
+                    }
+                }
+            }
         }
         $i++;
     }
@@ -108,8 +117,16 @@ function getMigrationFiles($connection) {
     foreach ($data as $row) {
         array_push($versionsFiles, $sqlFolder . $row['name']);
     }
-
     // Возвращаем файлы, которых еще нет в таблице versions
+    $arr_files = array_diff($allFiles, $versionsFiles);
+    if(!empty($arr_files)) {
+        foreach ($arr_files as $el) {
+            $hashname = hash_file('md5', $el);
+            $query = sprintf('insert into `%s` (`name_hash`,`name`) values("%s","%s")', DB_TABLE_HASH, $hashname,basename($el));
+            // Выполняем запрос
+            $connection->query($query);
+        }
+    }
     return array_diff($allFiles, $versionsFiles);
 }
 
@@ -266,7 +283,6 @@ if($_GET['task'] == 'marketer_list'){
             <th>Имя продавца</th>
             <th>Возраст</th>
             <th>Пол</th>
-            <th>Зарплата</th>
             <th>Номер отдела</th>
             <th colspan="2">Настройки</th>
         </tr>
@@ -278,7 +294,6 @@ if($_GET['task'] == 'marketer_list'){
                 <td><?=$row->name_marketer;?></td>
                 <td><?=$row->age_marketer;?></td>
                 <td><?=$row->gender;?></td>
-                <td><?=$row->salary_marketer;?></td>
                 <td><?=$row->id_dep;?></td>
 
                 <td><a href="?task=edit_marketer&id_marketer=<?=$row->id_marketer;?>">Изменить</a></td>

@@ -17,7 +17,7 @@
               <p>Номер отдела</p>
               <select name="new_marketer_dep_id">
                 <?php
-                $res=mysqli_query($connection,"SELECT `id_dep` FROM `department`" );
+                $res=mysqli_query($connection,"CALL get_dep()" );
                 ?>
                 <?php
                 while($row=$res->fetch_object()){
@@ -25,6 +25,7 @@
                     <option><?=$row->id_dep;?></option>
                     <?
                 }
+                mysqli_next_result($connection);
                 ?>
               </select>
               <br>
@@ -38,19 +39,7 @@
             $new_gender = $_POST['new_marketer_gender'];
             $new_dep = $_POST['new_marketer_dep_id'];
 
-            $sql = "INSERT INTO `marketer` 
-                    ( 
-                    `name_marketer`,
-                    `age_marketer`,
-                    `gender`,
-                    `id_dep`
-                    ) 
-                    VALUES (
-                        '$new_name',
-                        '$new_age',
-                        '$new_gender',
-                        '$new_dep'
-                        )";
+            $sql = "CALL add_marketer ('$new_name',$new_age,'$new_gender',$new_dep)";
             $add = mysqli_query($connection, $sql);
             $_GET['task'] = 'marketer_list_2';
         }
@@ -58,9 +47,9 @@
     if($_GET['task'] == 'del_marketer')
     {
         $del_per=$_GET['id_marketer'];
-        $query="DELETE FROM `marketer` WHERE `marketer`.`id_marketer` = '$del_per'";
+        $query="CALL del_marketer ($del_per)";
         $del=mysqli_query($connection, $query);
-        $_GET['task'] = 'marketer_list';
+        $_GET['task'] = 'marketer_list_2';
     }
     if($_GET['task'] == 'edit_marketer'){
         $id_old=$_GET['id_marketer'];
@@ -69,23 +58,18 @@
             $new_age=$_POST['old_marketer_age'];
             $new_gender=$_POST['old_marketer_gender'];
             $new_dep=$_POST['old_marketer_dep_id'];
-            $query="UPDATE `marketer` 
-                SET 
-                `name_marketer`='$new_name',
-                 `age_marketer`='$new_age' , 
-                 `gender`= '$new_gender', 
-                 `id_dep`= '$new_dep'
-                WHERE `marketer`.`id_marketer` = '$id_old'";
+            $query="CALL upd_marketer ($id_old,'$new_name',$new_age,'$new_gender',$new_dep)";
             $res=mysqli_query($connection,$query);
             $_GET['task'] = 'marketer_list_2';
         }
-        $query="SELECT * FROM `marketer` WHERE `marketer`.`id_marketer` ='$id_old'";
+        $query="CALL get_marketer_id($id_old)";
         $res=mysqli_query($connection,$query);
         $row=$res->fetch_object();
         $old_name=$row->name_marketer;
         $old_age=$row->age_marketer;
         $old_gender=$row->gender;
         $old_dep=$row->id_dep;
+        mysqli_next_result($connection);
         ?>
         <form method="post">
             <br>
@@ -101,7 +85,7 @@
             <p>Номер отдела</p>
             <select name="old_marketer_dep_id">
                 <?php
-                $res=mysqli_query($connection,"SELECT `id_dep` FROM `department`" );
+                $res=mysqli_query($connection,"CALL get_dep()" );
                 ?>
                 <?php
                 while($row=$res->fetch_object()){
@@ -116,6 +100,7 @@
                         <?
                     }
                 }
+                mysqli_next_result($connection);
                 ?>
             </select>
             <br>
@@ -125,7 +110,7 @@
         <?
     }
     if($_GET['task'] == 'marketer_list_2'){
-        $res = mysqli_query($connection,'SELECT* FROM marketer');
+        $res = mysqli_query($connection,'CALL get_marketer()');
         ?>
         <H3> Продавцы </H3>
         <table class="table table-bordered table-hover table-striped" style="width:600px;">
@@ -148,6 +133,7 @@
                 </tr>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </table>
         <?php

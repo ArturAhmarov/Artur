@@ -8,13 +8,14 @@ if($_GET['task'] == 'add_sale'){
         <p>Номер покупателя</p>
         <select name="id_buyer" >
             <?
-            $query="SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`";
+            $query="CALL get_buyer()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 ?>
                 <option><?= $row->id_buyer ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <br>
@@ -24,13 +25,14 @@ if($_GET['task'] == 'add_sale'){
         <p>Номер продавца</p>
         <select name="id_marketer" required>
             <?
-            $query="SELECT `id_marketer` FROM `marketer`";
+            $query="CALL get_marketer()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 ?>
                 <option><?= $row->id_marketer ?></option>
                 <?
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p></p>
@@ -41,18 +43,7 @@ if($_GET['task'] == 'add_sale'){
         $id_buyer = $_POST['id_buyer'];
         $date = $_POST['date'];
         $id_marketer=$_POST['id_marketer'];
-        $query="INSERT INTO `sale`
-                (
-                `id_buyer`,
-                `date_sale`,
-                `id_marketer`
-                )
-                VALUES
-                (
-                '$id_buyer',
-                '$date',
-                '$id_marketer'
-                )";
+        $query="CALL add_sale($id_buyer,'$date',$id_marketer)";
         $res=mysqli_query($connection,$query);
         $_GET['task'] ='sales_list_2';
     }
@@ -63,27 +54,23 @@ if($_GET['task'] == 'edit_sale'){
         $id_buyer = $_POST['id_buyer'];
         $date = $_POST['date'];
         $id_marketer = $_POST['id_marketer'];
-        $query="UPDATE `sale` 
-                SET 
-                `id_buyer` = '$id_buyer',
-                 `date_sale` = '$date',
-                 `id_marketer` = '$id_marketer'
-                WHERE `sale`.`id_sale` = '$id_old'";
+        $query="CALL upd_sale ($id_old,$id_buyer,'$date',$id_marketer)";
         $res=mysqli_query($connection,$query);
         $_GET['task'] = 'sales_list_2';
     }
-    $query="SELECT * FROM `sale` WHERE `sale`.`id_sale` ='$id_old'";
+    $query="CALL get_sale_id($id_old)";
     $res=mysqli_query($connection,$query);
     $row=$res->fetch_object();
     $id_buyer=$row->id_buyer;
     $date = $row->date_sale;
     $id_marketer = $row->id_marketer;
+    mysqli_next_result($connection);
     ?>
     <form method="post">
         <p>Номер покупателя</p>
         <select name="id_buyer" required>
             <?
-            $query="SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`";
+            $query="CALL get_buyer()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 if($row->id_buyer == $id_buyer){
@@ -97,6 +84,7 @@ if($_GET['task'] == 'edit_sale'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p>Дата продажи</p>
@@ -104,7 +92,7 @@ if($_GET['task'] == 'edit_sale'){
         <p>Номер продавца</p>
         <select name="id_marketer" required>
             <?
-            $query="SELECT `id_marketer` FROM `marketer`";
+            $query="CALL get_marketer()";
             $res=mysqli_query($connection,$query);
             while($row=$res->fetch_object()){
                 if($row->id_marketer == $id_marketer){
@@ -118,6 +106,7 @@ if($_GET['task'] == 'edit_sale'){
                     <?
                 }
             }
+            mysqli_next_result($connection);
             ?>
         </select>
         <p></p>
@@ -127,12 +116,12 @@ if($_GET['task'] == 'edit_sale'){
 }
 if($_GET['task'] == 'del_sale' ){
     $del_per=$_GET['id_sale'];
-    $query="DELETE FROM `sale` WHERE `sale`.`id_sale` = '$del_per'";
+    $query="CALL del_sale ($del_per)";
     $del=mysqli_query($connection, $query);
     $_GET['task'] = 'sales_list';
 }
 if($_GET['task'] == 'sales_list_2'){
-    $res = mysqli_query($connection,'SELECT* FROM sale');
+    $res = mysqli_query($connection,'CALL get_sale()');
     ?>
     <H3> Продажи </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
@@ -159,7 +148,7 @@ if($_GET['task'] == 'sales_list_2'){
 }
 if($_GET['task'] == 'sale_check' ){
     $buf=$_GET['id_sale'];
-    $res = mysqli_query($connection, "SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id_product WHERE b.id_sale ='$buf'");
+    $res = mysqli_query($connection, "CALL sale_check($buf)");
     ?>
     <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
     <tr>
