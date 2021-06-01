@@ -1,5 +1,17 @@
 DELIMITER $$
 
+CREATE DEFINER=`mysql`@`localhost` PROCEDURE `get_proverka_id_5` (`id_old` INT)  BEGIN
+SELECT * FROM `shipper` WHERE `shipper`.`id_shipper` =id_old;
+END$$
+
+CREATE DEFINER=`mysql`@`localhost` PROCEDURE `get_proverka_id_4` (`id_old` INT)  BEGIN
+SELECT * FROM `shipper` WHERE `shipper`.`id_shipper` =id_old;
+END$$
+
+CREATE DEFINER=`mysql`@`localhost` PROCEDURE `get_proverka_id_3` (`id_old` INT)  BEGIN
+SELECT * FROM `shipper` WHERE `shipper`.`id_shipper` =id_old;
+END$$
+
 CREATE DEFINER=`mysql`@`localhost` PROCEDURE `get_proverka_id_2` (`id_old` INT)  BEGIN
 SELECT * FROM `shipper` WHERE `shipper`.`id_shipper` =id_old;
 END$$

@@ -70,11 +70,13 @@ function getMigrationFiles($connection) {
 
     // Первая миграция, возвращаем все файлы из папки sql
     if ($firstMigration) {
+        $connection->next_result();
         foreach($allFiles as $file){
             $hashname = hash_file('md5', $file);
-            $query = sprintf('insert into `%s` (`name_hash`) values("%s")', DB_TABLE_HASH, $hashname);
+            $query = sprintf('CALL add_hash(`%s`,`%s`)',  $hashname,basename($file));
             // Выполняем запрос
             $connection->query($query);
+            $connection->next_result();
         }
         return $allFiles;
     }
@@ -86,7 +88,7 @@ function getMigrationFiles($connection) {
     $arr_hash = explode(" ", $arr_hash);
 
     // Выбираем из таблицы hash все хэши
-    $query = sprintf('select `name_hash`,`name` from `%s`', DB_TABLE_HASH);
+    $query = sprintf('CALL get_hash()');
     $data = $connection->query($query)->fetch_all(MYSQLI_ASSOC);
     $i = 1;
     foreach ($data as $row) {
@@ -96,9 +98,11 @@ function getMigrationFiles($connection) {
                 print($row['name']);
                 exit();
             }else{
-                $query = sprintf("DELETE from `%s` WHERE `name` = '0005_procedure.sql'" , DB_TABLE_VERSIONS);
+                $connection->next_result();
+                $query = sprintf("CALL del_procedure_from_versions()" );
                 if($connection->query($query)){
-                    $query = sprintf("DELETE from `%s` WHERE `name` = '0005_procedure.sql'" , DB_TABLE_HASH);
+                    $connection->next_result();
+                    $query = sprintf("CALL del_procedure_from_hash()" );
                     if($connection->query($query)){
                         echo "Процедуры изменились!";
                     }
@@ -107,22 +111,24 @@ function getMigrationFiles($connection) {
         }
         $i++;
     }
+    $connection->next_result();
     // Ищем уже существующие миграции
     $versionsFiles = array();
     // Выбираем из таблицы versions все названия файлов
-    $query = sprintf('select `name` from `%s`', DB_TABLE_VERSIONS);
+    $query = sprintf('CALL get_versions()' );
     $data = $connection->query($query)->fetch_all(MYSQLI_ASSOC);
     // Загоняем названия в массив $versionsFiles
     // Не забываем добавлять полный путь к файлу
     foreach ($data as $row) {
         array_push($versionsFiles, $sqlFolder . $row['name']);
     }
+    $connection->next_result();
     // Возвращаем файлы, которых еще нет в таблице versions
     $arr_files = array_diff($allFiles, $versionsFiles);
     if(!empty($arr_files)) {
         foreach ($arr_files as $el) {
             $hashname = hash_file('md5', $el);
-            $query = sprintf('insert into `%s` (`name_hash`,`name`) values("%s","%s")', DB_TABLE_HASH, $hashname,basename($el));
+            $query = sprintf('CALL add_hash("%s","%s")', $hashname,basename($el));
             // Выполняем запрос
             $connection->query($query);
         }
@@ -140,7 +146,7 @@ function migrate($connection, $file) {
     // Вытаскиваем имя файла, отбросив путь
     $baseName = basename($file);
     // Формируем запрос для добавления миграции в таблицу versions
-    $query = sprintf('insert into `%s` (`name`) values("%s")', DB_TABLE_VERSIONS, $baseName);
+    $query = sprintf('CALL add_versions("%s")',  $baseName);
     // Выполняем запрос
     $connection->query($query);
 }
