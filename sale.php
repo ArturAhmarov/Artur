@@ -9,10 +9,10 @@ if($_GET['task'] == 'add_sale'){
         <p>Номер покупателя</p>
         <select name="id_buyer" >
             <?
-            $res=R::getAll("SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`");
+            $res=R::findAll("buyer");
             foreach($res as $row){
                 ?>
-                <option><?= $row['id_buyer'] ?></option>
+                <option><?= $row['id'] ?></option>
                 <?
             }
             ?>
@@ -24,10 +24,10 @@ if($_GET['task'] == 'add_sale'){
         <p>Номер продавца</p>
         <select name="id_marketer" required>
             <?
-            $res=R::getAll("SELECT `id_marketer` FROM `marketer`");
+            $res=R::findAll("marketer");
             foreach($res as $row){
                 ?>
-                <option><?= $row['id_marketer'] ?></option>
+                <option><?= $row['id'] ?></option>
                 <?
             }
             ?>
@@ -56,24 +56,24 @@ if($_GET['task'] == 'edit_sale'){
         $_GET['task'] = 'sales_list_2';
     }
     $row=$sale->getid($id_old);
-    $id_buyer=$row[0]['id_buyer'];
-    $date = $row[0]['date_sale'];
-    $id_marketer = $row[0]['id_marketer'];
+    $id_buyer=$row['id_buyer'];
+    $date = $row['date_sale'];
+    $id_marketer = $row['id_marketer'];
     ?>
     <form method="post">
         <p>Номер покупателя</p>
         <select name="id_buyer" required>
             <?
-            $res=R::getAll("SELECT `id_buyer` FROM `buyer` ORDER BY `id_buyer`");
+            $res=R::findAll("buyer");
             foreach($res as $row){
-                if($row['id_buyer'] == $id_buyer){
+                if($row['id'] == $id_buyer){
                     ?>
-                    <option selected><?= $row['id_buyer'] ?></option>
+                    <option selected><?= $row['id'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row['id_buyer'] ?></option>
+                    <option><?= $row['id'] ?></option>
                     <?
                 }
             }
@@ -84,16 +84,16 @@ if($_GET['task'] == 'edit_sale'){
         <p>Номер продавца</p>
         <select name="id_marketer" required>
             <?
-            $res=R::getAll("SELECT `id_marketer` FROM `marketer`");
+            $res=R::findAll("marketer");
             foreach($res as $row){
-                if($row['id_marketer'] == $id_marketer){
+                if($row['id'] == $id_marketer){
                     ?>
-                    <option selected><?= $row['id_marketer'] ?></option>
+                    <option selected><?= $row['id'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row['id_marketer'] ?></option>
+                    <option><?= $row['id'] ?></option>
                     <?
                 }
             }
@@ -112,7 +112,7 @@ if($_GET['task'] == 'del_sale' ){
 }
 if($_GET['task'] == 'sales_list_2'){
     $sale = new sale();
-    $res = $sale->read('sale');
+    $res = $sale->read();
     ?>
     <H3> Продажи </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
@@ -126,7 +126,7 @@ if($_GET['task'] == 'sales_list_2'){
     foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row['id_sale'];?></td>
+            <td><?=$row['id'];?></td>
             <td><?=$row['id_buyer'];?></td>
             <td><?=$row['date_sale'];?></td>
             <td><?=$row['id_marketer'];?></td>
@@ -139,7 +139,7 @@ if($_GET['task'] == 'sales_list_2'){
 }
 if($_GET['task'] == 'sale_check' ){
     $buf=$_GET['id_sale'];
-    $res = R::getAll( "SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id_product WHERE b.id_sale ='$buf'");
+    $res = R::getAll( "SELECT b.id_sale,b.quantity_sale,s.name_product,s.cost FROM sale_product as b LEFT JOIN `product` s ON b.id_product = s.id WHERE b.id_sale ='$buf'");
     ?>
     <table class="table table-bordered table-hover table-striped" style="width: 500px;"">
     <tr>

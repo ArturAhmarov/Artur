@@ -3,46 +3,41 @@ require_once 'rb\rb.php';
 
 class magazine
 {
+    const  tablename = 'magazine';
     function __construct(){
         if (!R::testConnection()) {
-            R:: setup('mysql:host=127.0.0.1;dbname=kursach', 'mysql', 'mysql');
+            R:: setup('mysql:host=127.0.0.1;dbname=kursach_2', 'mysql', 'mysql');
         }
     }
     public function add($new_name_mag,$type,$id_owner)
     {
-        R::exec( "INSERT INTO `magazine`
-                (
-                `name_magazine`,
-                `magazine_type`,
-                `id_owner`
-                )
-                VALUES
-                (
-                '$new_name_mag',
-                '$type',
-                '$id_owner'
-                )");
+        $el= R::dispense(self::tablename);
+        $el->name_magazine = $new_name_mag;
+        $el->magazine_type = $type;
+        $el->id_owner = $id_owner;
+        R::store($el);
     }
     public function update($id,$new_name,$new_magazine_type,$new_id_owner)
     {
-        R::exec( "UPDATE `magazine` 
-                SET 
-                `name_magazine` = '$new_name',
-                 `magazine_type` = '$new_magazine_type',
-                 `id_owner` = $new_id_owner
-                WHERE `magazine`.`id_magazine` = '$id'");
+        $el = R::load(self::tablename,$id);
+        $el->name_magazine = $new_name;
+        $el->magazine_type = $new_magazine_type;
+        $el->id_owner = $new_id_owner;
+        R::store($el);
     }
     public function delete($id)
     {
-        R::exec( "DELETE FROM `magazine` WHERE `magazine`.`id_magazine` = '$id'");
+        $el = R::load(self::tablename,$id);
+        R::trash($el);
     }
-    public function read($tablename){
-        $table = R::getAll("SELECT *  FROM $tablename");
+    public function read(){
+        $table = R::findALl(self::tablename, "ORDER BY `id` ASC");
         return $table;
     }
     public function getid($id){
-        $element = R::getAll("SELECT * FROM `magazine` WHERE `id_magazine` = $id");
-        return $element;
+        $el = R::load(self::tablename,$id);
+        $el = $el->export();
+        return $el;
     }
 
 }

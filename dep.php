@@ -15,10 +15,10 @@ if($_GET['task'] == 'add_dep'){
         <p>Номер магазина</p>
         <select name="id_magazine" required>
             <?
-            $res=R::getAll("SELECT `id_magazine` FROM `magazine`");
+            $res=R::findAll("magazine");
             foreach($res as $row){
                 ?>
-                <option><?= $row['id_magazine'] ?></option>
+                <option><?= $row['id'] ?></option>
                 <?
             }
             ?>
@@ -47,9 +47,9 @@ if($_GET['task'] == 'edit_dep'){
         $_GET['task'] = 'dep_list_2';
     }
     $res=$dep->getid($id_old);
-    $old_name=$res[0]['name_dep'];
-    $old_floor=$res[0]['floor_dep'];
-    $old_id_magazine=$res[0]['id_magazine'];
+    $old_name=$res['name_dep'];
+    $old_floor=$res['floor_dep'];
+    $old_id_magazine=$res['id_magazine'];
     ?>
     <form method="post">
         <br>
@@ -62,16 +62,16 @@ if($_GET['task'] == 'edit_dep'){
         <p>Номер магазина</p>
         <select name="id_magazine" required>
             <?
-            $res=R::getAll("SELECT `id_magazine` FROM `magazine`");
+            $res=R::findAll("magazine");
             foreach($res as $row){
-                if($row['id_magazine'] == $old_id_magazine){
+                if($row['id'] == $old_id_magazine){
                     ?>
-                    <option selected><?= $row['id_magazine'] ?></option>
+                    <option selected><?= $row['id'] ?></option>
                     <?
                 }
                 else {
                 ?>
-                <option><?= $row['id_magazine'] ?></option>
+                <option><?= $row['id'] ?></option>
                 <?
                 }
             }
@@ -91,7 +91,7 @@ if($_GET['task'] == 'del_dep')
 }
 if($_GET['task'] == 'dep_list_2'){
     $dep = new dep();
-    $res = $dep->read('department');
+    $res = $dep->read();
     ?>
     <H3> Отделы </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
@@ -105,7 +105,7 @@ if($_GET['task'] == 'dep_list_2'){
     foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row['id_dep'];?></td>
+            <td><?=$row['id'];?></td>
             <td><?=$row['name_dep'];?></td>
             <td><?=$row['floor_dep'];?></td>
             <td><?=$row['id_magazine'];?></td>

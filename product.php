@@ -25,12 +25,12 @@ if($_GET['task'] == 'add_product'){
         <select name="new_product_dep_id" ">
         <?php
         $product=new product();
-        $res=R::getAll("SELECT `id_dep` FROM `department`");
+        $res=R::findAll("department");
         ?>
         <?php
         foreach ($res as $row){
             ?>
-            <option><?=$row['id_dep'];?></option>
+            <option><?=$row['id'];?></option>
             <?
         }
         ?>
@@ -39,12 +39,12 @@ if($_GET['task'] == 'add_product'){
         <p>Номер магазина</p>
         <select name="new_product_magaizne_id" ">
         <?php
-        $res=R::getAll("SELECT `id_magazine` FROM `magazine`" );
+        $res=R::findAll("magazine" );
         ?>
         <?php
         foreach ($res as $row){
             ?>
-            <option><?=$row['id_magazine'];?></option>
+            <option><?=$row['id'];?></option>
             <?
         }
         ?>
@@ -71,7 +71,7 @@ if($_GET['task'] == 'del_product')
     $del_per=$_GET['id_product'];
     $product = new product();
     $product->delete($del_per);
-    $_GET['task'] = 'product_list';
+    $_GET['task'] = 'product_list_2';
 }
 if($_GET['task']=='edit'){
     $id_old=$_GET['id_product'];
@@ -87,14 +87,15 @@ if($_GET['task']=='edit'){
         $product->update($id_old,$new_name,$new_cost,$new_net_cost,$new_quantity,$new_type,$new_dep,$new_id_magazine);
         $_GET['task'] = 'product_list_2';
     }
-    $res = R::getAll( "SELECT * FROM product WHERE product.id_product ='$id_old'");
-    $old_name=$res[0]['name_product'];
-    $old_cost = $res[0]['cost'];
-    $old_net_cost = $res[0]['net_cost'];
-    $old_quantity=$res[0]['quantity_product'];
-    $old_type=$res[0]['type'];
-    $old_dep=$res[0]['id_dep'];
-    $old_id_magazine=$res[0]['id_magazine'];
+    $product = new product();
+    $res = $product->getid($id_old);
+    $old_name=$res['name_product'];
+    $old_cost = $res['cost'];
+    $old_net_cost = $res['net_cost'];
+    $old_quantity=$res['quantity_product'];
+    $old_type=$res['type'];
+    $old_dep=$res['id_dep'];
+    $old_id_magazine=$res['id_magazine'];
     ?>
     <form method="post">
         <br>
@@ -116,18 +117,18 @@ if($_GET['task']=='edit'){
         <p>Номер отдела</p>
         <select name="old_product_dep_id" ">
         <?php
-        $res=R::getAll("SELECT `id_dep` FROM `department`" );
+        $res=R::findAll("department" );
         ?>
         <?php
         foreach($res as $row){
-            if($row['id_dep'] == $old_dep ){
+            if($row['id'] == $old_dep ){
                 ?>
-                <option selected><?=$row['id_dep'];?></option>
+                <option selected><?=$row['id'];?></option>
                 <?
             }
             else {
                 ?>
-                <option><?= $row['id_dep']; ?></option>
+                <option><?= $row['id']; ?></option>
                 <?
             }
         }
@@ -137,18 +138,18 @@ if($_GET['task']=='edit'){
         <p>Номер магазина</p>
         <select name="old_product_magaizne_id" ">
         <?php
-        $res=R::getAll("SELECT `id_magazine` FROM `magazine`" );
+        $res=R::findAll("magazine" );
         ?>
         <?php
         foreach($res as $row){
-            if($row['id_magazine'] == $old_id_magazine){
+            if($row['id'] == $old_id_magazine){
                 ?>
-                <option selected><?=$row['id_magazine'];?></option>
+                <option selected><?=$row['id'];?></option>
                 <?
             }
             else {
                 ?>
-                <option><?= $row['id_magazine']; ?></option>
+                <option><?= $row['id']; ?></option>
                 <?
             }
         }
@@ -169,12 +170,13 @@ if($_GET['task']=='sell_product'){
         <p>Номер продажи</p>
         <select name="id_sale" ">
         <?php
-        $res=R::exec("SELECT `id_sale` FROM `sale` ORDER BY `id_sale`" );
+        $product=new product();
+        $res=R::findAll("sale" );
         ?>
         <?php
-        foreach($res as $row){
+        foreach ($res as $row){
             ?>
-            <option><?=$row->id_sale;?></option>
+            <option><?=$row['id'];?></option>
             <?
         }
         ?>
@@ -186,13 +188,14 @@ if($_GET['task']=='sell_product'){
     <?
     if($_POST['sell']){
         $id_old=$_GET['id_product'];
-        $res=R::exec("SELECT `quantity_product` FROM `product` WHERE id_product ='$id_old'");
-        if($_POST['quantity'] < $res[0]['quantity_product']){
-            $new_quantity=$res[0]['quantity_product']-$_POST['quantity'];
+        $res=R::load("product",$id_old);
+        $res = $res->export();
+        if($_POST['quantity'] < $res['quantity_product']){
+            $new_quantity=$res['quantity_product']-$_POST['quantity'];
             $res = R::exec( "UPDATE `product` 
                 SET 
                  `quantity_product`='$new_quantity'
-                WHERE `product`.`id_product` = '$id_old'");
+                WHERE `product`.`id` = '$id_old'");
 
             $id_sale = $_POST['id_sale'];
             $quantity = $_POST['quantity'];
@@ -210,13 +213,13 @@ if($_GET['task']=='sell_product'){
             echo "Товар продан в количестве ", $_POST['quantity'];
         }
         else{
-            echo "Количество не может быть больше чем ", $row->quantity_product;
+            echo "Количество не может быть больше чем ", $res['quantity_product'];
         }
     }
 }
 if($_GET['task'] == 'product_list_2')
 {
-    $res = R::getAll(' SELECT * FROM `product` ');
+    $res = R::findAll('product');
     ?>
     <H3> Товары </H3>
     <table class="table table-bordered table-hover table-striped">
@@ -234,7 +237,7 @@ if($_GET['task'] == 'product_list_2')
         foreach ($res as $row) {
             ?>
             <tr>
-                <td><?=$row['id_product'];?></td>
+                <td><?=$row['id'];?></td>
                 <td><?=$row['name_product'];?></td>
                 <td><?=$row['cost'];?></td>
                 <td><?=$row['net_cost'];?></td>

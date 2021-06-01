@@ -19,12 +19,12 @@
               <select name="new_marketer_dep_id">
                 <?php
                 $marketer = new marketer();
-                $res=R::getAll("SELECT `id_dep` FROM `department`" );
+                $res=R::findAll("department" );
                 ?>
                 <?php
                 foreach($res as $row){
                     ?>
-                    <option><?=$row['id_dep'];?></option>
+                    <option><?=$row['id'];?></option>
                     <?
                 }
                 ?>
@@ -62,10 +62,10 @@
             $_GET['task'] = 'marketer_list_2';
         }
         $row = $marketer->getid($id_old);
-        $old_name=$row[0]['name_marketer'];
-        $old_age=$row[0]['age_marketer'];
-        $old_gender=$row[0]['gender'];
-        $old_dep=$row[0]['id_dep'];
+        $old_name=$row['name_marketer'];
+        $old_age=$row['age_marketer'];
+        $old_gender=$row['gender'];
+        $old_dep=$row['id_dep'];
         ?>
         <form method="post">
             <br>
@@ -81,18 +81,18 @@
             <p>Номер отдела</p>
             <select name="old_marketer_dep_id">
                 <?php
-                $res=R::getAll("SELECT `id_dep` FROM `department`" );
+                $res=R::findAll("department" );
                 ?>
                 <?php
                 foreach($res as $row){
-                    if($row['id_dep'] == $old_dep){
+                    if($row['id'] == $old_dep){
                         ?>
-                        <option selected><?= $row['id_dep']; ?></option>
+                        <option selected><?= $row['id']; ?></option>
                         <?
                     }
                     else {
                         ?>
-                        <option><?= $row['id_dep']; ?></option>
+                        <option><?= $row['id']; ?></option>
                         <?
                     }
                 }
@@ -106,7 +106,7 @@
     }
     if($_GET['task'] == 'marketer_list_2'){
         $marketer = new marketer();
-        $res = $marketer->read('marketer')
+        $res = $marketer->read()
         ?>
         <H3> Продавцы </H3>
         <table class="table table-bordered table-hover table-striped" style="width:600px;">
@@ -121,7 +121,7 @@
             foreach ($res as $row) {
                 ?>
                 <tr>
-                    <td><?=$row['id_marketer'];?></td>
+                    <td><?=$row['id'];?></td>
                     <td><?=$row['name_marketer'];?></td>
                     <td><?=$row['age_marketer'];?></td>
                     <td><?=$row['gender'];?></td>

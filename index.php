@@ -18,11 +18,11 @@
 define('DB_HOST', 'localhost');
 define('DB_USER', 'mysql');
 define('DB_PASSWORD', 'mysql');
-define('DB_NAME', 'kursach');
+define('DB_NAME', 'kursach_2');
 define('DB_TABLE_VERSIONS', 'versions');
 define('DB_TABLE_HASH', 'hash');
 
-$connection = mysqli_connect('127.0.0.1', 'mysql', 'mysql', 'kursach');
+$connection = mysqli_connect('127.0.0.1', 'mysql', 'mysql', 'kursach_2');
 if ($connection == false) {
     die ('Ошибка подключения: ' . mysqli_connect_error());
 }
@@ -171,32 +171,30 @@ function link_bar($page, $pages_count)
     return true;
 }
 if($_GET['task'] == 'ship_product'){
-    $res = mysqli_query($connection,'SELECT * FROM product_ship
-                                                INNER JOIN product ON product.id_product = product_ship.id_product
-                                                INNER JOIN shipper ON product_ship.id_shipper = shipper.id_shipper');
+    $res = R::getAll('SELECT product_ship.id,name_product,name_shipper FROM product_ship
+                                                INNER JOIN product ON product.id = product_ship.id_product
+                                                INNER JOIN shipper ON product_ship.id_shipper = shipper.id ORDER BY id');
     ?>
     <H3> Товары - поставщикии </H3>
     <a href="?task=add_ship_product" class="c">Добавить</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width:600px;">
         <tr>
-            <th>Номер товара</th>
+            <th>Номер</th>
             <th>Название товара</th>
-            <th>Номер поставщика</th>
             <th>ФИО поставщика</th>
             <th colspan="2"></th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?=$row->id_product;?></td>
-                <td><?=$row->name_product;?></td>
-                <td><?=$row->id_shipper;?></td>
-                <td><?=$row->name_shipper;?></td>
+                <td><?=$row['id'];?></td>
+                <td><?=$row['name_product'];?></td>
+                <td><?=$row['name_shipper'];?></td>
 
-                <td><a href="?task=edit_ship_product&id_ship_product=<?=$row->id;?>">Изменить</a></td>
-                <td><a href="?task=del_ship_product&id_ship_product=<?=$row->id;?>">Удалить</a></td>
+                <td><a href="?task=edit_ship_product&id_ship_product=<?=$row['id'];?>">Изменить</a></td>
+                <td><a href="?task=del_ship_product&id_ship_product=<?=$row['id'];?>">Удалить</a></td>
             </tr>
             <?
         }
@@ -212,13 +210,12 @@ if($_GET['task'] == 'product_list')
     } else {
         $page = (int) $_GET['page']; // Считывание текущей страницы
     }
-    $result = mysqli_query($connection,'SELECT* FROM product');
-    $count = mysqli_num_rows($result);
+    $count = R::count('product');
     $pages_count = ceil($count / $perpage);
     if ($page > $pages_count) $page = $pages_count;
     $start_pos = ($page - 1) * $perpage;
     link_bar($page, $pages_count);
-    $res= mysqli_query($connection,'SELECT* FROM product limit '.$start_pos.', '.$perpage);
+    $res =  R::getAll('SELECT * FROM `product` limit '.$start_pos.', '.$perpage);
     ?>
     <H3> Товары </H3>
     <a href="?task=add_product" class="c">Добавить товар</a>
@@ -236,21 +233,21 @@ if($_GET['task'] == 'product_list')
             <th colspan="3">Настройки</th>
         </tr>
         <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_product;?></td>
-            <td><?=$row->name_product;?></td>
-            <td><?=$row->cost;?></td>
-            <td><?=$row->net_cost;?></td>
-            <td><?=$row->quantity_product;?></td>
-            <td><?=$row->type;?></td>
-            <td><?=$row->id_dep;?></td>
-            <td><?=$row->id_magazine;?></td>
+            <td><?=$row['id'];?></td>
+            <td><?=$row['name_product'];?></td>
+            <td><?=$row['cost'];?></td>
+            <td><?=$row['net_cost'];?></td>
+            <td><?=$row['quantity_product'];?></td>
+            <td><?=$row['type'];?></td>
+            <td><?=$row['id_dep'];?></td>
+            <td><?=$row['id_magazine'];?></td>
 
-            <td><a href="?task=edit&id_product=<?=$row->id_product;?>">Изменить</a></td>
-            <td><a href="?task=del_product&id_product=<?=$row->id_product;?>">Удалить</a></td>
-            <td><a href="?task=sell_product&id_product=<?=$row->id_product;?>">Продать</a></td>
+            <td><a href="?task=edit&id_product=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_product&id_product=<?=$row['id'];?>">Удалить</a></td>
+            <td><a href="?task=sell_product&id_product=<?=$row['id'];?>">Продать</a></td>
         </tr>
         <?
     }
@@ -259,7 +256,8 @@ if($_GET['task'] == 'product_list')
 <?php
 }
 if($_GET['task'] == 'marketer_list'){
-    $res = mysqli_query($connection,'SELECT* FROM marketer');
+    $marketer = new marketer();
+    $res = $marketer->read();
     ?>
     <H3> Продавцы </H3>
     <a href="?task=add_marketer" class="c">Добавить продавца</a>
@@ -270,23 +268,21 @@ if($_GET['task'] == 'marketer_list'){
             <th>Имя продавца</th>
             <th>Возраст</th>
             <th>Пол</th>
-            <th>Зарплата</th>
             <th>Номер отдела</th>
             <th colspan="2">Настройки</th>
         </tr>
         <?php
-        while ($row = $res->fetch_object()) {
+        foreach ($res as $row) {
             ?>
             <tr>
-                <td><?=$row->id_marketer;?></td>
-                <td><?=$row->name_marketer;?></td>
-                <td><?=$row->age_marketer;?></td>
-                <td><?=$row->gender;?></td>
-                <td><?=$row->salary_marketer;?></td>
-                <td><?=$row->id_dep;?></td>
+                <td><?=$row['id'];?></td>
+                <td><?=$row['name_marketer'];?></td>
+                <td><?=$row['age_marketer'];?></td>
+                <td><?=$row['gender'];?></td>
+                <td><?=$row['id_dep'];?></td>
 
-                <td><a href="?task=edit_marketer&id_marketer=<?=$row->id_marketer;?>">Изменить</a></td>
-                <td><a href="?task=del_marketer&id_marketer=<?=$row->id_marketer;?>">Удалить</a></td>
+                <td><a href="?task=edit_marketer&id_marketer=<?=$row['id'];?>">Изменить</a></td>
+                <td><a href="?task=del_marketer&id_marketer=<?=$row['id'];?>">Удалить</a></td>
             </tr>
             <?
         }
@@ -295,7 +291,8 @@ if($_GET['task'] == 'marketer_list'){
     <?php
 }
 if($_GET['task'] == 'buyer_list'){
-    $res = mysqli_query($connection,'SELECT* FROM buyer');
+    $buyer = new buyer();
+    $res = $buyer->read();
     ?>
     <H3> Покупатели </H3>
     <a href="?task=add_buyer" class="c">Добавить покупателя</a>
@@ -310,16 +307,16 @@ if($_GET['task'] == 'buyer_list'){
         <th colspan="2">Настройки</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_buyer;?></td>
-            <td><?=$row->date_visit;?></td>
-            <td><?=$row->id_marketer;?></td>
-            <td><?=$row->id_dep;?></td>
-            <td><?=$row->id_magazine;?></td>
-            <td><a href="?task=edit_buyer&id_buyer=<?=$row->id_buyer;?>">Изменить</a></td>
-            <td><a href="?task=del_buyer&id_buyer=<?=$row->id_buyer;?>">Удалить</a></td>
+            <td><?=$row['id'];?></td>
+            <td><?=$row['date_visit'];?></td>
+            <td><?=$row['id_marketer'];?></td>
+            <td><?=$row['id_dep'];?></td>
+            <td><?=$row['id_magazine'];?></td>
+            <td><a href="?task=edit_buyer&id_buyer=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_buyer&id_buyer=<?=$row['id'];?>">Удалить</a></td>
         </tr>
         <?
     }
@@ -328,7 +325,8 @@ if($_GET['task'] == 'buyer_list'){
     <?php
 }
 if($_GET['task'] == 'owner_list'){
-    $res = mysqli_query($connection,'SELECT* FROM owner');
+    $owner = new owner();
+    $res = $owner->read();
     ?>
     <H3> Владельцы </H3>
     <a href="?task=add_owner" class="c">Добавить владельца</a>
@@ -341,15 +339,15 @@ if($_GET['task'] == 'owner_list'){
         <th colspan="2">Настройка</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_owner;?></td>
-            <td><?=$row->name_owner;?></td>
-            <td><?=$row->telephone_owner;?></td>
+            <td><?=$row['id'];?></td>
+            <td><?=$row['name_owner'];?></td>
+            <td><?=$row['telephone_owner'];?></td>
 
-            <td><a href="?task=edit_owner&id_owner=<?=$row->id_owner;?>">Изменить</a></td>
-            <td><a href="?task=del_owner&id_owner=<?=$row->id_owner;?>">Удалить</a></td>
+            <td><a href="?task=edit_owner&id_owner=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_owner&id_owner=<?=$row['id'];?>">Удалить</a></td>
         </tr>
         <?
     }
@@ -358,7 +356,8 @@ if($_GET['task'] == 'owner_list'){
     <?php
 }
 if($_GET['task'] == 'shipper_list'){
-    $res = $shipper->read('shipper');
+    $shipper = new shipper();
+    $res = $shipper->read();
     ?>
     <H3> Поставщики </H3>
     <a href="?task=add_shipper" class="c">Добавить поставщика</a>
@@ -374,11 +373,11 @@ if($_GET['task'] == 'shipper_list'){
     foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row['id_shipper'];?></td>
+            <td><?=$row['id'];?></td>
             <td><?=$row['name_shipper'];?></td>
             <td><?=$row['telephone_shipper'];?></td>
-            <td><a href="?task=edit_shipper&id_shipper=<?=$row['id_shipper'];?>">Изменить</a></td>
-            <td><a href="?task=del_shipper&id_shipper=<?=$row['id_shipper'];?>">Удалить</a></td>
+            <td><a href="?task=edit_shipper&id_shipper=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_shipper&id_shipper=<?=$row['id'];?>">Удалить</a></td>
         </tr>
         <?
     }
@@ -387,7 +386,8 @@ if($_GET['task'] == 'shipper_list'){
     <?php
 }
 if($_GET['task'] == 'sales_list'){
-    $res = mysqli_query($connection,'SELECT* FROM sale');
+    $sale = new sale();
+    $res = $sale->read();
     ?>
     <H3> Продажи </H3>
     <a href="?task=add_sale" class="c">Добавить продажу</a>
@@ -401,15 +401,15 @@ if($_GET['task'] == 'sales_list'){
         <th colspan="2">Настройки</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><a href="?task=sale_check&id_sale=<?=$row->id_sale;?>"><?=$row->id_sale;?></td></a>
-            <td><?=$row->id_buyer;?></td>
-            <td><?=$row->date_sale;?></td>
-            <td><?=$row->id_marketer;?></td>
-            <td><a href="?task=edit_sale&id_sale=<?=$row->id_sale;?>">Изменить</a></td>
-            <td><a href="?task=del_sale&id_sale=<?=$row->id_sale;?>">Удалить</a></td>
+            <td><a href="?task=sale_check&id_sale=<?=$row['id'];?>"><?=$row['id'];?></td></a>
+            <td><?=$row['id_buyer'];?></td>
+            <td><?=$row['date_sale'];?></td>
+            <td><?=$row['id_marketer'];?></td>
+            <td><a href="?task=edit_sale&id_sale=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_sale&id_sale=<?=$row['id'];?>">Удалить</a></td>
         </tr>
         <?
     }
@@ -418,7 +418,8 @@ if($_GET['task'] == 'sales_list'){
     <?php
 }
 if($_GET['task'] == 'dep_list'){
-    $res = mysqli_query($connection,'SELECT* FROM department');
+    $dep = new dep();
+    $res = $dep->read();
     ?>
     <H3> Отделы </H3>
     <a href="?task=add_dep" class="c">Добавить отдел</a>
@@ -432,16 +433,16 @@ if($_GET['task'] == 'dep_list'){
         <th colspan="2">Настройка</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_dep;?></td>
-            <td><?=$row->name_dep;?></td>
-            <td><?=$row->floor_dep;?></td>
-            <td><?=$row->id_magazine;?></td>
+            <td><?=$row['id'];?></td>
+            <td><?=$row['name_dep'];?></td>
+            <td><?=$row['floor_dep'];?></td>
+            <td><?=$row['id_magazine'];?></td>
 
-            <td><a href="?task=edit_dep&id_dep=<?=$row->id_dep;?>">Изменить</a></td>
-            <td><a href="?task=del_dep&id_dep=<?=$row->id_dep;?>">Удалить</a></td>
+            <td><a href="?task=edit_dep&id_dep=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_dep&id_dep=<?=$row['id'];?>">Удалить</a></td>
         </tr>
         <?
     }
@@ -450,7 +451,8 @@ if($_GET['task'] == 'dep_list'){
     <?php
 }
 if($_GET['task'] == 'magazine_list'){
-    $res = mysqli_query($connection,'SELECT* FROM magazine');
+    $magazine = new magazine();
+    $res = $magazine->read();
     ?>
     <H3> Магазины </H3>
     <a href="?task=add_magazine" class="c">Добавить магазин</a>
@@ -464,16 +466,16 @@ if($_GET['task'] == 'magazine_list'){
         <th colspan="2">Настройка</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_magazine;?></td>
-            <td><?=$row->name_magazine;?></td>
-            <td><?=$row->magazine_type;?></td>
-            <td><?=$row->id_owner;?></td>
+            <td><?=$row['id'];?></td>
+            <td><?=$row['name_magazine'];?></td>
+            <td><?=$row['magazine_type'];?></td>
+            <td><?=$row['id_owner'];?></td>
 
-            <td><a href="?task=edit_magazine&id_magazine=<?=$row->id_magazine;?>">Изменить</a></td>
-            <td><a href="?task=del_magazine&id_magazine=<?=$row->id_magazine;?>">Удалить</a></td>
+            <td><a href="?task=edit_magazine&id_magazine=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_magazine&id_magazine=<?=$row['id'];?>">Удалить</a></td>
         </tr>
         <?
     }
@@ -482,7 +484,8 @@ if($_GET['task'] == 'magazine_list'){
     <?php
 }
 if($_GET['task'] == 'sh_list'){
-    $res = mysqli_query($connection,'SELECT* FROM storehouse');
+    $sh = new sh();
+    $res = $sh->read();
     ?>
     <H3> Склад </H3>
     <a href="?task=add_order" class="c">Добавить заказ</a>
@@ -497,18 +500,18 @@ if($_GET['task'] == 'sh_list'){
         <th colspan="3">Настройка</th>
     </tr>
     <?php
-    while ($row = $res->fetch_object()) {
+    foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row->id_order;?></td>
-            <td><?=$row->id_product;?></td>
-            <td><?=$row->quantity_in_sh;?></td>
-            <td><?=$row->id_shipper;?></td>
-            <td><?=$row->order_status;?></td>
+            <td><?=$row['id'];?></td>
+            <td><?=$row['id_product'];?></td>
+            <td><?=$row['quantity_in_sh'];?></td>
+            <td><?=$row['id_shipper'];?></td>
+            <td><?=$row['order_status'];?></td>
 
-            <td><a href="?task=edit_sh&id_order=<?=$row->id_order;?>">Изменить</a></td>
-            <td><a href="?task=del_sh&id_order=<?=$row->id_order;?>">Удалить</a></td>
-            <td><a href="?task=carry_product&id_order=<?=$row->id_order;?>">Перенести товар в магазин</a></td>
+            <td><a href="?task=edit_sh&id_order=<?=$row['id'];?>">Изменить</a></td>
+            <td><a href="?task=del_sh&id_order=<?=$row['id'];?>">Удалить</a></td>
+            <td><a href="?task=carry_product&id_order=<?=$row['id'];?>">Перенести товар в магазин</a></td>
         </tr>
         <?
     }

@@ -3,43 +3,39 @@ require_once 'rb\rb.php';
 
 class shipper
 {
+    const  tablename = 'shipper';
     function __construct(){
         if (!R::testConnection()) {
-            R:: setup('mysql:host=127.0.0.1;dbname=kursach', 'mysql', 'mysql');
+            R:: setup('mysql:host=127.0.0.1;dbname=kursach_2', 'mysql', 'mysql');
         }
     }
     public function add($name,$telephone)
     {
-        R::exec( "INSERT INTO `shipper`
-                (
-                `name_shipper`,
-                `telephone_shipper`
-                )
-                VALUES
-                (
-                '$name',
-                '$telephone'
-                )");
+        $el= R::dispense(self::tablename);
+        $el->name_shipper = $name;
+        $el->telephone_shipper = $telephone;
+        R::store($el);
     }
     public function update($id,$name,$telephone)
     {
-        R::exec( "UPDATE `shipper` 
-                SET 
-                `name_shipper` = '$name',
-                 `telephone_shipper` = '$telephone'
-                WHERE `shipper`.`id_shipper` = '$id'");
+        $el = R::load(self::tablename,$id);
+        $el->name_shipper = $name;
+        $el->telephone_shipper = $telephone;
+        R::store($el);
     }
     public function delete($id)
     {
-        R::exec( "DELETE FROM `shipper` WHERE `shipper`.`id_shipper` = '$id'");
+        $el = R::load(self::tablename,$id);
+        R::trash($el);
     }
-    public function read($tablename){
-        $shipper = R::getAll("SELECT *  FROM $tablename");
-        return $shipper;
+    public function read(){
+        $table = R::findALl(self::tablename, "ORDER BY `id` ASC");
+        return $table;
     }
     public function getid($id){
-        $shipper = R::getAll("SELECT * FROM `shipper` WHERE `id_shipper` = $id");
-        return $shipper;
+        $el = R::load(self::tablename,$id);
+        $el = $el->export();
+        return $el;
     }
 
 }

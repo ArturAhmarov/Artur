@@ -36,10 +36,10 @@ if($_GET['task'] == 'edit_shipper'){
     <form method="post">
         <br>
         <p>ФИО владельца</p>
-        <input type = "text" name="old_shipper_name" value="<?=$res[0]['name_shipper'];?>" required>
+        <input type = "text" name="old_shipper_name" value="<?=$res['name_shipper'];?>" required>
         <br>
         <p>Телефон</p>
-        <input type = "number" name="old_telephone_shipper" value="<?=$res[0]['telephone_shipper']?>" required>
+        <input type = "number" name="old_telephone_shipper" value="<?=$res['telephone_shipper']?>" required>
         <p></p>
         <input type = "submit" name="upd" value = Изменить>
     </form>

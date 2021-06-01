@@ -34,8 +34,8 @@ if($_GET['task'] == 'edit_owner'){
     }
     $owner = new owner();
     $row=$owner->getid($id_old);
-    $old_name=$row[0]['name_owner'];
-    $old_telephone=$row[0]['telephone_owner'];
+    $old_name=$row['name_owner'];
+    $old_telephone=$row['telephone_owner'];
     ?>
     <form method="post">
         <br>
@@ -58,7 +58,7 @@ if($_GET['task'] == 'del_owner')
 }
 if($_GET['task'] == 'owner_list_2'){
     $owner = new owner();
-    $res = $owner->read('owner');
+    $res = $owner->read();
     ?>
     <H3> Владельцы </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 600px;" ">
@@ -71,7 +71,7 @@ if($_GET['task'] == 'owner_list_2'){
     foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row['id_owner'];?></td>
+            <td><?=$row['id'];?></td>
             <td><?=$row['name_owner'];?></td>
             <td><?=$row['telephone_owner'];?></td>
         </tr>

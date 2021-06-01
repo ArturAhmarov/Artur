@@ -9,10 +9,10 @@ if($_GET['task'] == 'add_order'){
         <p>Номер товара</p>
         <select name="id_product" required>
             <?
-            $res=R::getAll("SELECT `id_product` FROM `product`");
+            $res=R::findAll("product");
             foreach($res as $row){
                 ?>
-                <option><?= $row['id_product'] ?></option>
+                <option><?= $row['id'] ?></option>
                 <?
             }
             ?>
@@ -24,10 +24,10 @@ if($_GET['task'] == 'add_order'){
         <p>Номер поставщика</p>
         <select name="id_shipper" required>
             <?
-            $res=R::getAll("SELECT `id_shipper` FROM `shipper`");
+            $res=R::findAll("shipper");
             foreach($res as $row){
                 ?>
-                <option><?= $row['id_shipper'] ?></option>
+                <option><?= $row['id'] ?></option>
                 <?
             }
             ?>
@@ -64,26 +64,26 @@ if($_GET['task'] == 'edit_sh'){
         $_GET['task'] = 'sh_list_2';
     }
     $row=$sh->getid($id_old);
-    $id_product=$row[0]['id_product'];
-    $quantity_in_sh=$row[0]['quantity_in_sh'];
-    $id_shipper=$row[0]['id_shipper'];
-    $order_status = $row[0]['order_status'];
+    $id_product=$row['id_product'];
+    $quantity_in_sh=$row['quantity_in_sh'];
+    $id_shipper=$row['id_shipper'];
+    $order_status = $row['order_status'];
     ?>
     <form method="post">
         <br>
         <p>Номер товара</p>
         <select name="id_product" required>
             <?
-            $res=R::getAll("SELECT `id_product` FROM `product`");
+            $res=R::findAll("product");
             foreach($res as $row){
-                if($row['id_product'] == $id_product){
+                if($row['id'] == $id_product){
                     ?>
-                    <option selected><?= $row['id_product'] ?></option>
+                    <option selected><?= $row['id'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row['id_product'] ?></option>
+                    <option><?= $row['id'] ?></option>
                     <?
                 }
             }
@@ -96,16 +96,16 @@ if($_GET['task'] == 'edit_sh'){
         <p>Номер поставщика</p>
         <select name="id_shipper" required>
             <?
-            $res=R::getAll("SELECT `id_shipper` FROM `shipper`");
+            $res=R::findAll("shipper");
             foreach($res as $row){
-                if($row['id_shipper'] == $id_shipper){
+                if($row['id'] == $id_shipper){
                     ?>
-                    <option selected><?= $row['id_shipper'] ?></option>
+                    <option selected><?= $row['id'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row['id_shipper'] ?></option>
+                    <option><?= $row['id'] ?></option>
                     <?
                 }
             }
@@ -137,7 +137,7 @@ if($_GET['task'] == 'del_sh' ){
     $del_per=$_GET['id_order'];
     $sh = new sh();
     $sh->delete($del_per);
-    $_GET['task'] = 'sh_list';
+    $_GET['task'] = 'sh_list_2';
 }
 if($_GET['task']=='carry_product'){
     ?>
@@ -152,7 +152,7 @@ if($_GET['task']=='carry_product'){
     <?
     if($_POST['carry']){
         $id_old=$_GET['id_order'];
-        $row=R::getAll("SELECT `quantity_in_sh`,`id_product`,`order_status`FROM `storehouse` WHERE `id_order` ='$id_old'");
+        $row=R::getAll("SELECT `quantity_in_sh`,`id_product`,`order_status`FROM `storehouse` WHERE `id` ='$id_old'");
         $id_tovara = $row[0]['id_product'];
         if($row[0]['order_status'] == 'Есть на складе') {
             if ($_POST['quantity'] < $row[0]['quantity_in_sh']) {
@@ -160,7 +160,7 @@ if($_GET['task']=='carry_product'){
                 $query = R::exec("UPDATE `storehouse` 
                 SET 
                  `quantity_in_sh`='$new_quantity'
-                WHERE `storehouse`.`id_order` = '$id_old'");
+                WHERE `storehouse`.`id` = '$id_old'");
                 echo "Товар перемещен в магазин в количестве ", $_POST['quantity'];
             } else {
                 echo "Количество не может быть больше чем ", $row[0]['quantity_in_sh'];
@@ -172,7 +172,7 @@ if($_GET['task']=='carry_product'){
 }
 if($_GET['task'] == 'sh_list_2'){
     $sh = new sh();
-    $res = $sh->read('storehouse');
+    $res = $sh->read();
     ?>
     <H3> Склад </H3>
     <table class="table table-bordered table-hover table-striped">
@@ -186,7 +186,7 @@ if($_GET['task'] == 'sh_list_2'){
         <?php
         foreach ($res as $row) {
             ?>
-                <td><?=$row['id_order'];?></td>
+                <td><?=$row['id'];?></td>
                 <td><?=$row['id_product'];?></td>
                 <td><?=$row['quantity_in_sh'];?></td>
                 <td><?=$row['id_shipper'];?></td>

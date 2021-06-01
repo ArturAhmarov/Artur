@@ -10,12 +10,12 @@
               <select name="id_product">
                 <?php
                 $product_ship = new product_ship();
-                $res = R::getAll('SELECT id_product,name_product FROM product');
+                $res = R::findAll('product');
                 ?>
                 <?php
                 foreach($res as $row){
                     ?>
-                    <option value="<?=$row['id_product'];?>"><?=$row['name_product'];?></option>
+                    <option value="<?=$row['id'];?>"><?=$row['name_product'];?></option>
                     <?
                 }
                 ?>
@@ -24,12 +24,12 @@
               <p>Поставщик</p>
               <select name="id_shipper">
                   <?php
-                  $res = R::getAll('SELECT id_shipper,name_shipper FROM shipper');
+                  $res = R::findAll('shipper');
                   ?>
                   <?php
                   foreach($res as $row){
                       ?>
-                      <option value="<?=$row['id_shipper'];?>"><?=$row['name_shipper'];?></option>
+                      <option value="<?=$row['id'];?>"><?=$row['name_shipper'];?></option>
                       <?
                   }
                   ?>
@@ -64,26 +64,26 @@
         }
         $product_ship = new product_ship();
         $row=$product_ship->getid($id_old);
-        $id_product=$row[0]['id_product'];
-        $id_shipper=$row[0]['id_shipper'];
+        $id_product=$row['id_product'];
+        $id_shipper=$row['id_shipper'];
         ?>
         <form method="post">
             <br>
             <p>Товар</p>
             <select name="id_product">
                 <?php
-                $res = R::getAll('SELECT id_product,name_product FROM product');
+                $res = R::findAll('product');
                 ?>
                 <?php
                 foreach($res as $row){
-                    if($row['id_product'] == $id_product ){
+                    if($row['id'] == $id_product ){
                         ?>
-                        <option value="<?=$row['id_product'];?>" selected><?=$row['name_product'];?></option>
+                        <option value="<?=$row['id'];?>" selected><?=$row['name_product'];?></option>
                         <?
                     }
                     else{
                         ?>
-                        <option value="<?=$row['id_product'];?>"><?=$row['name_product'];?></option>
+                        <option value="<?=$row['id'];?>"><?=$row['name_product'];?></option>
                         <?
                     }
                 }
@@ -93,18 +93,18 @@
             <p>Поставщик</p>
             <select name="id_shipper">
                 <?php
-                $res = R::getAll('SELECT id_shipper,name_shipper FROM shipper');
+                $res = R::findAll('shipper');
                 ?>
                 <?php
                 foreach($res as $row){
-                    if($row['id_shipper'] == $id_shipper) {
+                    if($row['id'] == $id_shipper) {
                         ?>
-                        <option value="<?=$row['id_shipper'];?>" selected><?=$row['name_shipper'];?></option>
+                        <option value="<?=$row['id'];?>" selected><?=$row['name_shipper'];?></option>
                         <?
                     }
                     else{
                         ?>
-                        <option value="<?=$row['id_shipper'];?>"><?=$row['name_shipper'];?></option>
+                        <option value="<?=$row['id'];?>"><?=$row['name_shipper'];?></option>
                         <?
                     }
                 }

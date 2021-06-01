@@ -15,10 +15,10 @@ if($_GET['task'] == 'add_magazine'){
         <p>Номер хозяйна</p>
         <select name="id_owner" required>
             <?
-            $res=R::getAll("SELECT `id_owner` FROM `owner`");
+            $res=R::findAll("owner");
             foreach($res as $row){
                 ?>
-                <option><?= $row['id_owner'] ?></option>
+                <option><?= $row['id'] ?></option>
                 <?
             }
             ?>
@@ -47,9 +47,9 @@ if($_GET['task'] == 'edit_magazine'){
         $_GET['task'] ='magazine_list_2';
     }
     $row = $magazine->getid($id_old);
-    $old_name=$row[0]['name_magazine'];
-    $old_magazine_type=$row[0]['magazine_type'];
-    $old_id_owner=$row[0]['id_owner'];
+    $old_name=$row['name_magazine'];
+    $old_magazine_type=$row['magazine_type'];
+    $old_id_owner=$row['id_owner'];
     ?>
     <form method="post">
         <br>
@@ -62,16 +62,16 @@ if($_GET['task'] == 'edit_magazine'){
         <p>Номер хозяйна</p>
         <select name="id_owner" required>
             <?
-            $res=R::getAll("SELECT `id_owner` FROM `owner`");
+            $res=R::findAll('owner');
             foreach($res as $row){
-                if($row['id_owner'] == $old_id_owner){
+                if($row['id'] == $old_id_owner){
                     ?>
-                    <option selected><?= $row['id_owner'] ?></option>
+                    <option selected><?= $row['id'] ?></option>
                     <?
                 }
                 else {
                     ?>
-                    <option><?= $row['id_owner'] ?></option>
+                    <option><?= $row['id'] ?></option>
                     <?
                 }
             }
@@ -90,7 +90,7 @@ if($_GET['task'] == 'del_magazine' ){
 }
 if($_GET['task'] == 'magazine_list_2'){
     $magazine = new magazine();
-    $res = $magazine->read('magazine');
+    $res = $magazine->read();
     ?>
     <H3> Магазины </H3>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
@@ -104,7 +104,7 @@ if($_GET['task'] == 'magazine_list_2'){
     foreach ($res as $row) {
         ?>
         <tr>
-            <td><?=$row['id_magazine'];?></td>
+            <td><?=$row['id'];?></td>
             <td><?=$row['name_magazine'];?></td>
             <td><?=$row['magazine_type'];?></td>
             <td><?=$row['id_owner'];?></td>
