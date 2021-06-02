@@ -175,6 +175,8 @@ if($_GET['task'] == 'ship_product'){
     ?>
     <H3> Товары - поставщикии </H3>
     <a href="?task=add_ship_product" class="c">Добавить</a>
+    <a href="/excel.php?tablename=product_ship" class="c">Excel</a>
+    <a href="/pdf.php?tablename=product_ship" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width:600px;">
         <tr>
@@ -220,6 +222,8 @@ if($_GET['task'] == 'product_list')
     ?>
     <H3> Товары </H3>
     <a href="?task=add_product" class="c">Добавить товар</a>
+    <a href="/excel.php?tablename=product" class="c">Excel</a>
+    <a href="/pdf.php?tablename=product" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped">
         <tr>
@@ -261,6 +265,8 @@ if($_GET['task'] == 'marketer_list'){
     ?>
     <H3> Продавцы </H3>
     <a href="?task=add_marketer" class="c">Добавить продавца</a>
+    <a href="/excel.php?tablename=marketer" class="c">Excel</a>
+    <a href="/pdf.php?tablename=marketer" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width:600px;">
         <tr>
@@ -297,6 +303,8 @@ if($_GET['task'] == 'buyer_list'){
     ?>
     <H3> Покупатели </H3>
     <a href="?task=add_buyer" class="c">Добавить покупателя</a>
+    <a href="/excel.php?tablename=buyer" class="c">Excel</a>
+    <a href="/pdf.php?tablename=buyer" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
     <tr>
@@ -330,6 +338,8 @@ if($_GET['task'] == 'owner_list'){
     ?>
     <H3> Владельцы </H3>
     <a href="?task=add_owner" class="c">Добавить владельца</a>
+    <a href="/excel.php?tablename=owner" class="c">Excel</a>
+    <a href="/pdf.php?tablename=owner" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width: 600px;" ">
     <tr>
@@ -360,6 +370,8 @@ if($_GET['task'] == 'shipper_list'){
     ?>
     <H3> Поставщики </H3>
     <a href="?task=add_shipper" class="c">Добавить поставщика</a>
+    <a href="/excel.php?tablename=shipper" class="c">Excel</a>
+    <a href="/pdf.php?tablename=shipper" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width: 600px;" ">
     <tr>
@@ -390,6 +402,8 @@ if($_GET['task'] == 'sales_list'){
     ?>
     <H3> Продажи </H3>
     <a href="?task=add_sale" class="c">Добавить продажу</a>
+    <a href="/excel.php?tablename=sale" class="c">Excel</a>
+    <a href="/pdf.php?tablename=sale" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
     <tr>
@@ -421,6 +435,8 @@ if($_GET['task'] == 'dep_list'){
     ?>
     <H3> Отделы </H3>
     <a href="?task=add_dep" class="c">Добавить отдел</a>
+    <a href="/excel.php?tablename=department" class="c">Excel</a>
+    <a href="/pdf.php?tablename=department" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
     <tr>
@@ -453,6 +469,8 @@ if($_GET['task'] == 'magazine_list'){
     ?>
     <H3> Магазины </H3>
     <a href="?task=add_magazine" class="c">Добавить магазин</a>
+    <a href="/excel.php?tablename=magazine" class="c">Excel</a>
+    <a href="/pdf.php?tablename=magazine" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped" style="width: 1000px;"">
     <tr>
@@ -485,6 +503,8 @@ if($_GET['task'] == 'sh_list'){
     ?>
     <H3> Склад </H3>
     <a href="?task=add_order" class="c">Добавить заказ</a>
+    <a href="/excel.php?tablename=storehouse" class="c">Excel</a>
+    <a href="/pdf.php?tablename=storehouse" class="c">Pdf</a>
     <p></p>
     <table class="table table-bordered table-hover table-striped">
     <tr>
